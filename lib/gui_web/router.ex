@@ -20,6 +20,7 @@ defmodule GuiWeb.Router do
     live "/", PageLive, :index
     live "/counter", CounterLive
     live "/temperature", TemperatureLive
+    live "/flight_booker", FlightBookerLive
   end
 
   # Other scopes may use custom stacks.
