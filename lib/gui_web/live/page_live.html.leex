@@ -15,9 +15,11 @@
       <li>
         <%= live_patch "Flight Booker", to: Routes.live_path(@socket, GuiWeb.FlightBookerLive) %>
       </li>
-
       <li>
         <%= live_patch "Timer", to: Routes.live_path(@socket, GuiWeb.TimerLive) %>
+      </li>
+      <li>
+        <%= live_patch "CRUD", to: Routes.live_path(@socket, GuiWeb.CRUDLive) %>
       </li>
     </ol>
   </article>
