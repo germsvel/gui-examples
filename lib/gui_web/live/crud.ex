@@ -5,14 +5,20 @@ defmodule GuiWeb.CRUDLive do
 
   def render(assigns) do
     ~L"""
+    <style>
+      select {
+        height: 100%;
+      }
+    </style>
+
     <h1>CRUD</h1>
 
-    <div id="user-list">
-      <ul>
+    <div >
+      <select id="user-list" size="<%= length(@users) %>">
         <%= for user <- @users do %>
-          <li><%= user.first_name %> <%= user.last_name %></li>
+          <option><%= user.first_name %> <%= user.last_name %></option>
         <% end %>
-      </ul>
+      </select>
     </div>
 
     <form id="new-user" phx-submit="create">
