@@ -13,15 +13,15 @@ defmodule GuiWeb.CRUDLive do
 
     <h1>CRUD</h1>
 
-    <div >
-      <select id="user-list" size="<%= length(@users) %>">
-        <%= for user <- @users do %>
-          <option><%= user.first_name %> <%= user.last_name %></option>
-        <% end %>
-      </select>
-    </div>
-
     <form id="new-user" phx-submit="create">
+      <div >
+        <select name="user[selected_user]" id="user-list" size="<%= length(@users) %>">
+          <%= for user <- @users do %>
+            <option value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+          <% end %>
+        </select>
+      </div>
+
       <div>
         <label for="user[first_name]">Name:</label>
         <input type="text" name="user[first_name]" id="first_name">
@@ -31,16 +31,20 @@ defmodule GuiWeb.CRUDLive do
       </div>
 
       <button type="submit">Create</button>
+      <button id="update" type="button" disabled>Update</button>
+      <button id="delete" type="button" disabled>Delete</button>
     </form>
     """
   end
 
   def mount(_, _, socket) do
-    {:ok, assign(socket, users: [])}
+    users = CRUD.list_users()
+
+    {:ok, assign(socket, users: users)}
   end
 
   def handle_event("create", %{"user" => params}, socket) do
-    user = CRUD.create_user(params)
+    {:ok, user} = CRUD.create_user(params)
 
     socket
     |> update(:users, fn users -> [user | users] end)
