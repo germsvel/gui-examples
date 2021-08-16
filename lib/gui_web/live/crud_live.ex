@@ -14,7 +14,12 @@ defmodule GuiWeb.CRUDLive do
     <h1>CRUD</h1>
 
     <div id="new-user">
-      <div >
+      <div>
+        <form phx-change="filter-list" id="list-filter">
+          <label for="filter">Filter prefix:</label>
+          <input type="text" name="filter">
+        </form>
+
         <select name="user[selected_user]" id="user-list" size="<%= length(@users) %>">
           <%= for user <- @users do %>
             <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
@@ -108,6 +113,14 @@ defmodule GuiWeb.CRUDLive do
       Enum.filter(users, fn user -> user.id != deleted_user.id end)
     end)
     |> reset_current_user()
+    |> noreply()
+  end
+
+  def handle_event("filter-list", %{"filter" => text}, socket) do
+    socket
+    |> update(:users, fn users ->
+      Enum.filter(users, fn user -> String.starts_with?(user.last_name, text) end)
+    end)
     |> noreply()
   end
 

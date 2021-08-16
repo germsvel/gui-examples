@@ -50,6 +50,19 @@ defmodule GuiWeb.CrudLiveTest do
     refute has_element?(view, "#user-list", "Baggins, Frodo")
   end
 
+  test "user can filter list of users by Surname prefix (starts with)", %{conn: conn} do
+    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
+    {:ok, view, _html} = live(conn, "/crud")
+
+    view
+    |> form("#list-filter", %{filter: "Brand"})
+    |> render_change()
+
+    assert has_element?(view, "#user-list", "Brandybuck, Merry")
+    refute has_element?(view, "#user-list", "Baggins, Frodo")
+  end
+
   defp select_user(view, id) do
     view
     |> element("select #user-#{id}")
@@ -85,6 +98,4 @@ defmodule GuiWeb.CrudLiveTest do
   defp submit_delete(view) do
     view |> element("#delete") |> render_click()
   end
-
-  test "user can filter list of users by Surname prefix (starts with)"
 end
