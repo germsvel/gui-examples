@@ -11,4 +11,10 @@ defmodule Gui.CRUD do
     |> User.changeset(params)
     |> Repo.insert()
   end
+
+  def update_user(user, params) do
+    user
+    |> User.changeset(params)
+    |> Repo.update()
+  end
 end

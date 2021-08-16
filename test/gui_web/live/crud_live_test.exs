@@ -13,8 +13,9 @@ defmodule GuiWeb.CrudLiveTest do
     {:ok, view, _html} = live(conn, "/crud")
 
     view
-    |> form("#new-user", user: %{first_name: "Frodo", last_name: "Baggins"})
-    |> render_submit()
+    |> set_first_name("Frodo")
+    |> set_last_name("Baggins")
+    |> submit_create()
 
     assert has_element?(view, "#user-list", "Baggins, Frodo")
   end
@@ -31,10 +32,43 @@ defmodule GuiWeb.CrudLiveTest do
     {:ok, view, _html} = live(conn, "/crud")
 
     view
-    |> form("#new-user", user: %{selected_user: id, first_name: "Bilbo"})
-    |> render_submit()
+    |> select_user(id)
+    |> set_first_name("Bilbo")
+    |> submit_update()
 
     assert has_element?(view, "#user-list", "Baggins, Bilbo")
+  end
+
+  defp select_user(view, id) do
+    view
+    |> element("select #user-#{id}")
+    |> render_click()
+
+    view
+  end
+
+  defp set_first_name(view, name) do
+    view
+    |> element("[name='user[first_name]']")
+    |> render_blur(%{value: name})
+
+    view
+  end
+
+  defp set_last_name(view, name) do
+    view
+    |> element("[name='user[last_name]']")
+    |> render_blur(%{value: name})
+
+    view
+  end
+
+  defp submit_create(view) do
+    view |> element("#create") |> render_click()
+  end
+
+  defp submit_update(view) do
+    view |> element("#update") |> render_click()
   end
 
   test "user can delete a selected user"
