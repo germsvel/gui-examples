@@ -51,6 +51,19 @@ defmodule GuiWeb.CrudLiveTest do
     assert has_element?(view, "#user-list", "Baggins, Bilbo")
   end
 
+  test "user sees errors with invalid name when updating name", %{conn: conn} do
+    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, view, _html} = live(conn, "/crud")
+
+    html =
+      view
+      |> select_user(id)
+      |> set_first_name("")
+      |> submit_update()
+
+    assert html =~ "can&#39;t be blank"
+  end
+
   test "user can delete a selected user", %{conn: conn} do
     {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
     {:ok, view, _html} = live(conn, "/crud")

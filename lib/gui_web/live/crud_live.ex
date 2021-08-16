@@ -111,20 +111,27 @@ defmodule GuiWeb.CRUDLive do
   def handle_event("update", _, socket) do
     user = find_user(socket.assigns.users, socket.assigns.current_user_id)
     params = user_params(socket)
-    {:ok, updated_user} = CRUD.update_user(user, params)
 
-    socket
-    |> update(:users, fn users ->
-      Enum.map(users, fn
-        user when user.id == updated_user.id ->
-          updated_user
+    case CRUD.update_user(user, params) do
+      {:ok, updated_user} ->
+        socket
+        |> update(:users, fn users ->
+          Enum.map(users, fn
+            user when user.id == updated_user.id ->
+              updated_user
 
-        user ->
-          user
-      end)
-    end)
-    |> update_filtered_users()
-    |> noreply()
+            user ->
+              user
+          end)
+        end)
+        |> update_filtered_users()
+        |> noreply()
+
+      {:error, changeset} ->
+        socket
+        |> assign(:errors, changeset.errors)
+        |> noreply()
+    end
   end
 
   def handle_event("delete", _, socket) do
