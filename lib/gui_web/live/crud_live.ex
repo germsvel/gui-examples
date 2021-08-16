@@ -34,7 +34,7 @@ defmodule GuiWeb.CRUDLive do
 
       <%= if !!@current_user_id do %>
         <button id="update" type="button" phx-click="update">Update</button>
-        <button id="delete" type="button" disabled>Delete</button>
+        <button id="delete" type="button" phx-click="delete">Delete</button>
       <% else %>
         <button id="update" type="button" disabled>Update</button>
         <button id="delete" type="button" disabled>Delete</button>
@@ -95,6 +95,17 @@ defmodule GuiWeb.CRUDLive do
         user ->
           user
       end)
+    end)
+    |> noreply()
+  end
+
+  def handle_event("delete", _, socket) do
+    user = find_user(socket.assigns.users, socket.assigns.current_user_id)
+    {:ok, deleted_user} = CRUD.delete_user(user)
+
+    socket
+    |> update(:users, fn users ->
+      Enum.filter(users, fn user -> user.id != deleted_user.id end)
     end)
     |> noreply()
   end

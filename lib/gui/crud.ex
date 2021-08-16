@@ -17,4 +17,9 @@ defmodule Gui.CRUD do
     |> User.changeset(params)
     |> Repo.update()
   end
+
+  def delete_user(user) do
+    user
+    |> Repo.delete()
+  end
 end

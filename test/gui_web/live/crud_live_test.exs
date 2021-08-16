@@ -39,6 +39,17 @@ defmodule GuiWeb.CrudLiveTest do
     assert has_element?(view, "#user-list", "Baggins, Bilbo")
   end
 
+  test "user can delete a selected user", %{conn: conn} do
+    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, view, _html} = live(conn, "/crud")
+
+    view
+    |> select_user(id)
+    |> submit_delete()
+
+    refute has_element?(view, "#user-list", "Baggins, Frodo")
+  end
+
   defp select_user(view, id) do
     view
     |> element("select #user-#{id}")
@@ -71,6 +82,9 @@ defmodule GuiWeb.CrudLiveTest do
     view |> element("#update") |> render_click()
   end
 
-  test "user can delete a selected user"
+  defp submit_delete(view) do
+    view |> element("#delete") |> render_click()
+  end
+
   test "user can filter list of users by Surname prefix (starts with)"
 end
