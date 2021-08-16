@@ -21,7 +21,7 @@ defmodule GuiWeb.CRUDLive do
         </form>
 
         <select name="user[selected_user]" id="user-list" size="<%= length(@users) %>">
-          <%= for user <- @users do %>
+          <%= for user <- @filtered_users do %>
             <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
           <% end %>
         </select>
@@ -51,7 +51,14 @@ defmodule GuiWeb.CRUDLive do
   def mount(_, _, socket) do
     users = CRUD.list_users()
 
-    {:ok, assign(socket, users: users, current_user_id: nil, first_name: "", last_name: "")}
+    {:ok,
+     assign(socket,
+       filtered_users: users,
+       users: users,
+       current_user_id: nil,
+       first_name: "",
+       last_name: ""
+     )}
   end
 
   def handle_event("select-user", %{"value" => user_id}, socket) do
@@ -83,6 +90,7 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> update(:users, fn users -> [user | users] end)
+    |> update_filtered_users()
     |> noreply()
   end
 
@@ -101,6 +109,7 @@ defmodule GuiWeb.CRUDLive do
           user
       end)
     end)
+    |> update_filtered_users()
     |> noreply()
   end
 
@@ -112,16 +121,22 @@ defmodule GuiWeb.CRUDLive do
     |> update(:users, fn users ->
       Enum.filter(users, fn user -> user.id != deleted_user.id end)
     end)
+    |> update_filtered_users()
     |> reset_current_user()
     |> noreply()
   end
 
   def handle_event("filter-list", %{"filter" => text}, socket) do
+    filtered_users =
+      Enum.filter(socket.assigns.users, fn user -> String.starts_with?(user.last_name, text) end)
+
     socket
-    |> update(:users, fn users ->
-      Enum.filter(users, fn user -> String.starts_with?(user.last_name, text) end)
-    end)
+    |> assign(:filtered_users, filtered_users)
     |> noreply()
+  end
+
+  defp update_filtered_users(socket) do
+    socket |> assign(:filtered_users, socket.assigns.users)
   end
 
   defp reset_current_user(socket) do

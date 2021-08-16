@@ -63,6 +63,27 @@ defmodule GuiWeb.CrudLiveTest do
     refute has_element?(view, "#user-list", "Baggins, Frodo")
   end
 
+  test "user can remove filter and see all users again", %{conn: conn} do
+    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
+    {:ok, view, _html} = live(conn, "/crud")
+
+    view
+    |> filter_list("Brand")
+    |> filter_list("")
+
+    assert has_element?(view, "#user-list", "Brandybuck, Merry")
+    assert has_element?(view, "#user-list", "Baggins, Frodo")
+  end
+
+  defp filter_list(view, text) do
+    view
+    |> form("#list-filter", %{filter: text})
+    |> render_change()
+
+    view
+  end
+
   defp select_user(view, id) do
     view
     |> element("select #user-#{id}")
