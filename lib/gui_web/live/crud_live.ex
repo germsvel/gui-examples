@@ -107,7 +107,15 @@ defmodule GuiWeb.CRUDLive do
     |> update(:users, fn users ->
       Enum.filter(users, fn user -> user.id != deleted_user.id end)
     end)
+    |> reset_current_user()
     |> noreply()
+  end
+
+  defp reset_current_user(socket) do
+    socket
+    |> assign(:current_user_id, nil)
+    |> assign(:first_name, "")
+    |> assign(:last_name, "")
   end
 
   defp find_user(users, id) do
