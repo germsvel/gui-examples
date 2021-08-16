@@ -30,9 +30,15 @@ defmodule GuiWeb.CRUDLive do
       <div>
         <label for="user[first_name]">Name:</label>
         <input phx-blur="set-first-name" type="text" name="user[first_name]" id="first_name" value="<%= @first_name %>">
+        <%= if @errors[:first_name] do %>
+          <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
+        <% end %>
 
         <label for="user[last_name]">Surname:</label>
         <input phx-blur="set-last-name" type="text" name="user[last_name]" id="last_name" value="<%= @last_name %>">
+        <%= if @errors[:last_name] do %>
+          <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
+        <% end %>
       </div>
 
       <button id="create" type="button" phx-click="create">Create</button>
@@ -55,6 +61,7 @@ defmodule GuiWeb.CRUDLive do
      assign(socket,
        filtered_users: users,
        users: users,
+       errors: %{},
        current_user_id: nil,
        first_name: "",
        last_name: ""
@@ -86,12 +93,19 @@ defmodule GuiWeb.CRUDLive do
 
   def handle_event("create", _, socket) do
     params = user_params(socket)
-    {:ok, user} = CRUD.create_user(params)
 
-    socket
-    |> update(:users, fn users -> [user | users] end)
-    |> update_filtered_users()
-    |> noreply()
+    case CRUD.create_user(params) do
+      {:ok, user} ->
+        socket
+        |> update(:users, fn users -> [user | users] end)
+        |> update_filtered_users()
+        |> noreply()
+
+      {:error, changeset} ->
+        socket
+        |> assign(:errors, changeset.errors)
+        |> noreply()
+    end
   end
 
   def handle_event("update", _, socket) do

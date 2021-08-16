@@ -9,6 +9,25 @@ defmodule GuiWeb.CrudLiveTest do
     assert html =~ "CRUD"
   end
 
+  test "update and delete buttons are disabled when no user is selected", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/crud")
+
+    assert has_element?(view, "button#update:disabled", "Update")
+    assert has_element?(view, "button#delete:disabled", "Delete")
+  end
+
+  test "user sees errors with invalid name", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/crud")
+
+    html =
+      view
+      |> set_first_name("Frodo")
+      |> set_last_name("")
+      |> submit_create()
+
+    assert html =~ "can&#39;t be blank"
+  end
+
   test "user can enter a new name into user list", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/crud")
 
@@ -18,13 +37,6 @@ defmodule GuiWeb.CrudLiveTest do
     |> submit_create()
 
     assert has_element?(view, "#user-list", "Baggins, Frodo")
-  end
-
-  test "update and delete buttons are disabled when no user is selected", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/crud")
-
-    assert has_element?(view, "button#update:disabled", "Update")
-    assert has_element?(view, "button#delete:disabled", "Delete")
   end
 
   test "user can update a selected user", %{conn: conn} do
