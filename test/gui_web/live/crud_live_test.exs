@@ -119,7 +119,7 @@ defmodule GuiWeb.CrudLiveTest do
 
   defp set_first_name(view, name) do
     view
-    |> element("[name='user[first_name]']")
+    |> element("[name='first_name']")
     |> render_blur(%{value: name})
 
     view
@@ -127,7 +127,7 @@ defmodule GuiWeb.CrudLiveTest do
 
   defp set_last_name(view, name) do
     view
-    |> element("[name='user[last_name]']")
+    |> element("[name='last_name']")
     |> render_blur(%{value: name})
 
     view

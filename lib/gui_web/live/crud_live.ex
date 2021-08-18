@@ -20,7 +20,7 @@ defmodule GuiWeb.CRUDLive do
           <input type="text" name="filter">
         </form>
 
-        <select name="user[selected_user]" id="user-list" size="<%= length(@users) %>">
+        <select name="selected_user" id="user-list" size="<%= length(@users) %>">
           <%= for user <- @filtered_users do %>
             <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
           <% end %>
@@ -28,14 +28,14 @@ defmodule GuiWeb.CRUDLive do
       </div>
 
       <div>
-        <label for="user[first_name]">Name:</label>
-        <input phx-blur="set-first-name" type="text" name="user[first_name]" id="first_name" value="<%= @first_name %>">
+        <label for="first_name">Name:</label>
+        <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @first_name %>">
         <%= if @errors[:first_name] do %>
           <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
         <% end %>
 
-        <label for="user[last_name]">Surname:</label>
-        <input phx-blur="set-last-name" type="text" name="user[last_name]" id="last_name" value="<%= @last_name %>">
+        <label for="last_name">Surname:</label>
+        <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @last_name %>">
         <%= if @errors[:last_name] do %>
           <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
         <% end %>
