@@ -21,7 +21,7 @@ defmodule GuiWeb.CRUDLive do
         </form>
 
         <select name="selected_user" id="user-list" size="<%= length(@users) %>">
-          <%= for user <- @filtered_users do %>
+          <%= for user <- filter_users(@users, @filter) do %>
             <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
           <% end %>
         </select>
@@ -59,10 +59,10 @@ defmodule GuiWeb.CRUDLive do
 
     {:ok,
      assign(socket,
-       filtered_users: users,
        users: users,
        errors: %{},
        current_user_id: nil,
+       filter: "",
        first_name: "",
        last_name: ""
      )}
@@ -98,7 +98,6 @@ defmodule GuiWeb.CRUDLive do
       {:ok, user} ->
         socket
         |> update(:users, fn users -> [user | users] end)
-        |> update_filtered_users()
         |> noreply()
 
       {:error, changeset} ->
@@ -116,7 +115,6 @@ defmodule GuiWeb.CRUDLive do
       {:ok, updated_user} ->
         socket
         |> update(:users, &replace_updated_user(&1, updated_user))
-        |> update_filtered_users()
         |> noreply()
 
       {:error, changeset} ->
@@ -132,22 +130,14 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> update(:users, &remove_deleted_user(&1, deleted_user))
-    |> update_filtered_users()
     |> reset_current_user()
     |> noreply()
   end
 
   def handle_event("filter-list", %{"filter" => text}, socket) do
-    filtered_users =
-      Enum.filter(socket.assigns.users, fn user -> String.starts_with?(user.last_name, text) end)
-
     socket
-    |> assign(:filtered_users, filtered_users)
+    |> assign(:filter, text)
     |> noreply()
-  end
-
-  defp update_filtered_users(socket) do
-    socket |> assign(:filtered_users, socket.assigns.users)
   end
 
   defp reset_current_user(socket) do
@@ -155,6 +145,10 @@ defmodule GuiWeb.CRUDLive do
     |> assign(:current_user_id, nil)
     |> assign(:first_name, "")
     |> assign(:last_name, "")
+  end
+
+  defp filter_users(users, filter) do
+    Enum.filter(users, fn user -> String.starts_with?(user.last_name, filter) end)
   end
 
   defp find_user(users, id) do
