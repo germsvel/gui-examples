@@ -43,7 +43,7 @@ defmodule GuiWeb.CRUDLive do
 
       <button id="create" type="button" phx-click="create">Create</button>
 
-      <%= if !!@current_user_id do %>
+      <%= if @current_user_id do %>
         <button id="update" type="button" phx-click="update">Update</button>
         <button id="delete" type="button" phx-click="delete">Delete</button>
       <% else %>
