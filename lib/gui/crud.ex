@@ -2,6 +2,8 @@ defmodule Gui.CRUD do
   alias Gui.CRUD.User
   alias Gui.Repo
 
+  def new_user, do: %User{}
+
   def list_users do
     Repo.all(User)
   end

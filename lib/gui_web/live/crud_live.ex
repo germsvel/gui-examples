@@ -29,13 +29,13 @@ defmodule GuiWeb.CRUDLive do
 
       <div>
         <label for="first_name">Name:</label>
-        <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @user_params.first_name %>">
+        <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @current_user.first_name %>">
         <%= if @errors[:first_name] do %>
           <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
         <% end %>
 
         <label for="last_name">Surname:</label>
-        <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @user_params.last_name %>">
+        <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @current_user.last_name %>">
         <%= if @errors[:last_name] do %>
           <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
         <% end %>
@@ -43,7 +43,7 @@ defmodule GuiWeb.CRUDLive do
 
       <button id="create" type="button" phx-click="create">Create</button>
 
-      <%= if @selected_user do %>
+      <%= if user_selected?(@current_user) do %>
         <button id="update" type="button" phx-click="update">Update</button>
         <button id="delete" type="button" phx-click="delete">Delete</button>
       <% else %>
@@ -61,12 +61,8 @@ defmodule GuiWeb.CRUDLive do
      assign(socket,
        users: users,
        errors: %{},
-       selected_user: nil,
        filter: "",
-       user_params: %{
-         first_name: "",
-         last_name: ""
-       }
+       current_user: CRUD.new_user()
      )}
   end
 
@@ -75,28 +71,24 @@ defmodule GuiWeb.CRUDLive do
     user = find_user(socket.assigns.users, user_id)
 
     socket
-    |> assign(:selected_user, user)
-    |> assign(
-      :user_params,
-      %{first_name: user.first_name, last_name: user.last_name}
-    )
+    |> assign(:current_user, user)
     |> noreply()
   end
 
   def handle_event("set-first-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_params, fn user_params -> %{user_params | first_name: name} end)
+    |> update(:current_user, fn current_user -> %{current_user | first_name: name} end)
     |> noreply()
   end
 
   def handle_event("set-last-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_params, fn user_params -> %{user_params | last_name: name} end)
+    |> update(:current_user, fn current_user -> %{current_user | last_name: name} end)
     |> noreply()
   end
 
   def handle_event("create", _, socket) do
-    case CRUD.create_user(socket.assigns.user_params) do
+    case CRUD.create_user(current_user_params(socket)) do
       {:ok, user} ->
         socket
         |> update(:users, fn users -> [user | users] end)
@@ -110,10 +102,10 @@ defmodule GuiWeb.CRUDLive do
   end
 
   def handle_event("update", _, socket) do
-    selected_user = socket.assigns.selected_user
-    user_params = socket.assigns.user_params
+    selected_user = find_user(socket.assigns.users, socket.assigns.current_user.id)
+    params = current_user_params(socket)
 
-    case CRUD.update_user(selected_user, user_params) do
+    case CRUD.update_user(selected_user, params) do
       {:ok, updated_user} ->
         socket
         |> update(:users, &replace_updated_user(&1, updated_user))
@@ -127,7 +119,7 @@ defmodule GuiWeb.CRUDLive do
   end
 
   def handle_event("delete", _, socket) do
-    {:ok, deleted_user} = CRUD.delete_user(socket.assigns.selected_user)
+    {:ok, deleted_user} = CRUD.delete_user(socket.assigns.current_user)
 
     socket
     |> update(:users, &remove_deleted_user(&1, deleted_user))
@@ -141,10 +133,14 @@ defmodule GuiWeb.CRUDLive do
     |> noreply()
   end
 
+  defp current_user_params(socket), do: Map.from_struct(socket.assigns.current_user)
+
+  defp user_selected?(%{id: id}) when not is_nil(id), do: true
+  defp user_selected?(_), do: false
+
   defp reset_selected_user(socket) do
     socket
-    |> assign(:selected_user, nil)
-    |> assign(:user_params, %{first_name: "", last_name: ""})
+    |> assign(:current_user, CRUD.new_user())
   end
 
   defp filter_users(users, filter) do
