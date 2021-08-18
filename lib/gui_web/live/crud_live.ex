@@ -115,15 +115,7 @@ defmodule GuiWeb.CRUDLive do
     case CRUD.update_user(user, params) do
       {:ok, updated_user} ->
         socket
-        |> update(:users, fn users ->
-          Enum.map(users, fn
-            user when user.id == updated_user.id ->
-              updated_user
-
-            user ->
-              user
-          end)
-        end)
+        |> update(:users, &replace_updated_user(&1, updated_user))
         |> update_filtered_users()
         |> noreply()
 
@@ -139,9 +131,7 @@ defmodule GuiWeb.CRUDLive do
     {:ok, deleted_user} = CRUD.delete_user(user)
 
     socket
-    |> update(:users, fn users ->
-      Enum.filter(users, fn user -> user.id != deleted_user.id end)
-    end)
+    |> update(:users, &remove_deleted_user(&1, deleted_user))
     |> update_filtered_users()
     |> reset_current_user()
     |> noreply()
@@ -173,6 +163,20 @@ defmodule GuiWeb.CRUDLive do
 
   defp user_params(socket) do
     %{"first_name" => socket.assigns.first_name, "last_name" => socket.assigns.last_name}
+  end
+
+  defp replace_updated_user(users, updated_user) do
+    Enum.map(users, fn
+      user when user.id == updated_user.id ->
+        updated_user
+
+      user ->
+        user
+    end)
+  end
+
+  defp remove_deleted_user(users, deleted_user) do
+    Enum.filter(users, fn user -> user.id != deleted_user.id end)
   end
 
   def noreply(socket), do: {:noreply, socket}
