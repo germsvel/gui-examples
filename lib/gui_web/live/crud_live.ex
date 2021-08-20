@@ -14,13 +14,16 @@ defmodule GuiWeb.CRUDLive do
     <h1>CRUD</h1>
 
     <div id="new-user">
-      <div>
-        <form phx-change="filter-list" id="list-filter">
+      <form phx-change="filter-list" id="list-filter">
+        <div class="flex flex-row items-baseline space-x-4">
           <label for="filter">Filter prefix:</label>
-          <input type="text" name="filter">
-        </form>
+          <input class="max-w-sm" type="text" name="filter">
+        </div>
+      </form>
 
-        <select name="selected_user" id="user-list" size="<%= length(@users) %>">
+    <div class="flex flex-row flex-wrap space-x-8 items-top">
+      <div>
+        <select class="appearance-none" name="selected_user" id="user-list" size="<%= length(@users) %>">
           <%= for user <- filter_users(@users, @filter) do %>
             <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
           <% end %>
@@ -28,19 +31,31 @@ defmodule GuiWeb.CRUDLive do
       </div>
 
       <div>
-        <label for="first_name">Name:</label>
-        <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @current_user.first_name %>">
-        <%= if @errors[:first_name] do %>
-          <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
-        <% end %>
+        <div class="grid grid-cols-3 items-baseline gap-4">
+          <label for="first_name">Name:</label>
 
-        <label for="last_name">Surname:</label>
-        <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @current_user.last_name %>">
-        <%= if @errors[:last_name] do %>
-          <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
-        <% end %>
+          <div class="col-span-2">
+            <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @current_user.first_name %>">
+            <%= if @errors[:first_name] do %>
+              <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 items-baseline gap-4">
+          <label for="last_name">Surname:</label>
+
+          <div class="col-span-2">
+            <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @current_user.last_name %>">
+            <%= if @errors[:last_name] do %>
+              <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
+            <% end %>
+          </div>
+        </div>
       </div>
+    </div>
 
+    <div class="mt-10 space-x-2">
       <button id="create" type="button" phx-click="create">Create</button>
 
       <%= if user_selected?(@current_user) do %>
