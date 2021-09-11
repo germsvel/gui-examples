@@ -107,6 +107,7 @@ defmodule GuiWeb.CRUDLive do
       {:ok, user} ->
         socket
         |> update(:users, fn users -> [user | users] end)
+        |> assign(:errors, %{})
         |> noreply()
 
       {:error, changeset} ->
@@ -124,6 +125,7 @@ defmodule GuiWeb.CRUDLive do
       {:ok, updated_user} ->
         socket
         |> update(:users, &replace_updated_user(&1, updated_user))
+        |> assign(:errors, %{})
         |> noreply()
 
       {:error, changeset} ->

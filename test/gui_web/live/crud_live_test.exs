@@ -28,6 +28,22 @@ defmodule GuiWeb.CrudLiveTest do
     assert html =~ "can&#39;t be blank"
   end
 
+  test "errors are removed when invalid field is fixed for create", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/crud")
+
+    view
+    |> set_first_name("Frodo")
+    |> set_last_name("")
+    |> submit_create()
+
+    html =
+      view
+      |> set_last_name("Baggins")
+      |> submit_create()
+
+    refute html =~ "can&#39;t be blank"
+  end
+
   test "user can enter a new name into user list", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/crud")
 
@@ -62,6 +78,24 @@ defmodule GuiWeb.CrudLiveTest do
       |> submit_update()
 
     assert html =~ "can&#39;t be blank"
+  end
+
+  test "errors are removed when invalid field is fixed for update", %{conn: conn} do
+    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, view, _html} = live(conn, "/crud")
+
+    view
+    |> select_user(id)
+    |> set_first_name("")
+    |> submit_update()
+
+    html =
+      view
+      |> select_user(id)
+      |> set_first_name("Bilbo")
+      |> submit_update()
+
+    refute html =~ "can&#39;t be blank"
   end
 
   test "user can delete a selected user", %{conn: conn} do
