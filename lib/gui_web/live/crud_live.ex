@@ -35,7 +35,7 @@ defmodule GuiWeb.CRUDLive do
           <label for="first_name">Name:</label>
 
           <div class="col-span-2">
-            <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @current_user.first_name %>">
+            <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @user_changes.first_name %>">
             <%= if @errors[:first_name] do %>
               <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
             <% end %>
@@ -46,7 +46,7 @@ defmodule GuiWeb.CRUDLive do
           <label for="last_name">Surname:</label>
 
           <div class="col-span-2">
-            <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @current_user.last_name %>">
+            <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @user_changes.last_name %>">
             <%= if @errors[:last_name] do %>
               <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
             <% end %>
@@ -77,7 +77,8 @@ defmodule GuiWeb.CRUDLive do
        users: users,
        errors: %{},
        filter: "",
-       current_user: CRUD.new_user()
+       current_user: nil,
+       user_changes: CRUD.new_user() |> Map.from_struct()
      )}
   end
 
@@ -87,23 +88,24 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> assign(:current_user, user)
+    |> assign(:user_changes, Map.from_struct(user))
     |> noreply()
   end
 
   def handle_event("set-first-name", %{"value" => name}, socket) do
     socket
-    |> update(:current_user, fn current_user -> %{current_user | first_name: name} end)
+    |> update(:user_changes, fn changes -> %{changes | first_name: name} end)
     |> noreply()
   end
 
   def handle_event("set-last-name", %{"value" => name}, socket) do
     socket
-    |> update(:current_user, fn current_user -> %{current_user | last_name: name} end)
+    |> update(:user_changes, fn changes -> %{changes | last_name: name} end)
     |> noreply()
   end
 
   def handle_event("create", _, socket) do
-    case CRUD.create_user(current_user_params(socket)) do
+    case CRUD.create_user(socket.assigns.user_changes) do
       {:ok, user} ->
         socket
         |> update(:users, fn users -> [user | users] end)
@@ -119,7 +121,7 @@ defmodule GuiWeb.CRUDLive do
 
   def handle_event("update", _, socket) do
     selected_user = find_user(socket.assigns.users, socket.assigns.current_user.id)
-    params = current_user_params(socket)
+    params = socket.assigns.user_changes
 
     case CRUD.update_user(selected_user, params) do
       {:ok, updated_user} ->
@@ -149,8 +151,6 @@ defmodule GuiWeb.CRUDLive do
     |> assign(:filter, text)
     |> noreply()
   end
-
-  defp current_user_params(socket), do: Map.from_struct(socket.assigns.current_user)
 
   defp user_selected?(%{id: id}) when not is_nil(id), do: true
   defp user_selected?(_), do: false
