@@ -2,6 +2,7 @@ defmodule GuiWeb.CRUDLive do
   use GuiWeb, :live_view
 
   alias Gui.CRUD
+  alias Gui.CRUD.User
 
   def render(assigns) do
     ~L"""
@@ -31,27 +32,7 @@ defmodule GuiWeb.CRUDLive do
       </div>
 
       <div>
-        <div class="grid grid-cols-3 items-baseline gap-4">
-          <label for="first_name">Name:</label>
-
-          <div class="col-span-2">
-            <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= @user_changes.first_name %>">
-            <%= if @errors[:first_name] do %>
-              <span class="invalid-feedback"><%= translate_error(@errors[:first_name]) %></span>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 items-baseline gap-4">
-          <label for="last_name">Surname:</label>
-
-          <div class="col-span-2">
-            <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= @user_changes.last_name %>">
-            <%= if @errors[:last_name] do %>
-              <span class="invalid-feedback"><%= translate_error(@errors[:last_name]) %></span>
-            <% end %>
-          </div>
-        </div>
+        <%= render_inputs(assigns) %>
       </div>
     </div>
 
@@ -69,16 +50,69 @@ defmodule GuiWeb.CRUDLive do
     """
   end
 
+  def render_inputs(assigns) do
+    case assigns[:user_changes] do
+      {:invalid_changes, changes, errors} ->
+        render_invalid_inputs(assigns, changes, errors)
+
+      {_, changes} ->
+        render_valid_inputs(assigns, changes)
+    end
+  end
+
+  def render_valid_inputs(assigns, changes) do
+    ~L"""
+      <div class="grid grid-cols-3 items-baseline gap-4">
+        <label for="first_name">Name:</label>
+        <div class="col-span-2">
+          <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= changes.first_name %>">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 items-baseline gap-4">
+        <label for="last_name">Surname:</label>
+
+        <div class="col-span-2">
+          <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= changes.last_name %>">
+        </div>
+      </div>
+    """
+  end
+
+  def render_invalid_inputs(assigns, changes, errors) do
+    ~L"""
+      <div class="grid grid-cols-3 items-baseline gap-4">
+        <label for="first_name">Name:</label>
+        <div class="col-span-2">
+          <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= changes.first_name %>">
+          <%= if errors[:first_name] do %>
+            <span class="invalid-feedback"><%= translate_error(errors[:first_name]) %></span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 items-baseline gap-4">
+        <label for="last_name">Surname:</label>
+
+        <div class="col-span-2">
+          <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= changes.last_name %>">
+          <%= if errors[:last_name] do %>
+            <span class="invalid-feedback"><%= translate_error(errors[:last_name]) %></span>
+          <% end %>
+        </div>
+      </div>
+    """
+  end
+
   def mount(_, _, socket) do
     users = CRUD.list_users()
 
     {:ok,
      assign(socket,
        users: users,
-       errors: %{},
        filter: "",
        current_user: nil,
-       user_changes: CRUD.new_user() |> Map.from_struct()
+       user_changes: CRUD.new_user() |> Map.from_struct() |> new_changes()
      )}
   end
 
@@ -88,51 +122,58 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> assign(:current_user, user)
-    |> assign(:user_changes, Map.from_struct(user))
+    |> assign(:user_changes, valid_changes(Map.from_struct(user)))
     |> noreply()
   end
 
   def handle_event("set-first-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_changes, fn changes -> %{changes | first_name: name} end)
+    |> update(:user_changes, fn changes -> put_change(changes, :first_name, name) end)
     |> noreply()
   end
 
   def handle_event("set-last-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_changes, fn changes -> %{changes | last_name: name} end)
+    |> update(:user_changes, fn changes -> put_change(changes, :last_name, name) end)
     |> noreply()
   end
 
   def handle_event("create", _, socket) do
-    case CRUD.create_user(socket.assigns.user_changes) do
-      {:ok, user} ->
+    with {:valid_changes, changes} <- validate_changes(socket.assigns.user_changes),
+         {:ok, user} <- CRUD.create_user(changes) do
+      socket
+      |> update(:users, fn users -> [user | users] end)
+      |> noreply()
+    else
+      {:invalid_changes, changes, errors} ->
         socket
-        |> update(:users, fn users -> [user | users] end)
-        |> assign(:errors, %{})
+        |> assign(:user_changes, {:invalid_changes, changes, errors})
         |> noreply()
 
       {:error, changeset} ->
         socket
-        |> assign(:errors, changeset.errors)
+        |> assign(:user_changes, {:invalid_changes, changeset.data, changeset.errors})
         |> noreply()
     end
   end
 
   def handle_event("update", _, socket) do
     selected_user = find_user(socket.assigns.users, socket.assigns.current_user.id)
-    params = socket.assigns.user_changes
 
-    case CRUD.update_user(selected_user, params) do
-      {:ok, updated_user} ->
+    with {:valid_changes, changes} <- validate_changes(socket.assigns.user_changes),
+         {:ok, updated_user} <- CRUD.update_user(selected_user, changes) do
+      socket
+      |> update(:users, &replace_updated_user(&1, updated_user))
+      |> noreply()
+    else
+      {:invalid_changes, changes, errors} ->
         socket
-        |> update(:users, &replace_updated_user(&1, updated_user))
-        |> assign(:errors, %{})
+        |> assign(:user_changes, {:invalid_changes, changes, errors})
         |> noreply()
 
       {:error, changeset} ->
         socket
-        |> assign(:errors, changeset.errors)
+        |> assign(:user_changes, {:invalid_changes, changeset.data, changeset.errors})
         |> noreply()
     end
   end
@@ -151,6 +192,28 @@ defmodule GuiWeb.CRUDLive do
     |> assign(:filter, text)
     |> noreply()
   end
+
+  defp validate_changes({:valid_changes, _changes} = user_changes), do: user_changes
+  defp validate_changes({:invalid_changes, _changes, _errors} = user_changes), do: user_changes
+
+  defp validate_changes({:new_changes, changes}) do
+    changeset = %User{} |> User.changeset(changes)
+
+    if changeset.valid? do
+      valid_changes(changes)
+    else
+      invalid_changes(changes, changeset.errors)
+    end
+  end
+
+  defp new_changes(changes), do: {:new_changes, changes}
+  defp valid_changes(changes), do: {:valid_changes, changes}
+  defp invalid_changes(changes, errors), do: {:invalid_changes, changes, errors}
+
+  defp put_change({_type, changes}, key, value), do: {:new_changes, Map.put(changes, key, value)}
+
+  defp put_change({_type, changes, _errors}, key, value),
+    do: {:new_changes, Map.put(changes, key, value)}
 
   defp user_selected?(%{id: id}) when not is_nil(id), do: true
   defp user_selected?(_), do: false
