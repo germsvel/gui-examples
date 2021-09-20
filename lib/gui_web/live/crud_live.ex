@@ -22,30 +22,31 @@ defmodule GuiWeb.CRUDLive do
         </div>
       </form>
 
-    <div class="flex flex-row flex-wrap space-x-8 items-top">
-      <div>
-        <select class="appearance-none" name="selected_user" id="user-list" size="<%= length(@users) %>">
-          <%= for user <- filter_users(@users, @filter) do %>
-            <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
-          <% end %>
-        </select>
+      <div class="flex flex-row flex-wrap space-x-8 items-top">
+        <div>
+          <select class="appearance-none" name="selected_user" id="user-list" size="<%= length(@users) %>">
+            <%= for user <- filter_users(@users, @filter) do %>
+              <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <div>
+          <%= render_inputs(assigns) %>
+        </div>
       </div>
 
-      <div>
-        <%= render_inputs(assigns) %>
+      <div class="mt-10 space-x-2">
+        <button id="create" type="button" phx-click="create">Create</button>
+
+        <%= if user_selected?(@current_user) do %>
+          <button id="update" type="button" phx-click="update">Update</button>
+          <button id="delete" type="button" phx-click="delete">Delete</button>
+        <% else %>
+          <button id="update" type="button" disabled>Update</button>
+          <button id="delete" type="button" disabled>Delete</button>
+        <% end %>
       </div>
-    </div>
-
-    <div class="mt-10 space-x-2">
-      <button id="create" type="button" phx-click="create">Create</button>
-
-      <%= if user_selected?(@current_user) do %>
-        <button id="update" type="button" phx-click="update">Update</button>
-        <button id="delete" type="button" phx-click="delete">Delete</button>
-      <% else %>
-        <button id="update" type="button" disabled>Update</button>
-        <button id="delete" type="button" disabled>Delete</button>
-      <% end %>
     </div>
     """
   end
