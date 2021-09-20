@@ -2,7 +2,6 @@ defmodule GuiWeb.CRUDLive do
   use GuiWeb, :live_view
 
   alias Gui.CRUD
-  alias Gui.CRUD.User
 
   def render(assigns) do
     ~L"""
@@ -113,7 +112,7 @@ defmodule GuiWeb.CRUDLive do
        users: users,
        filter: "",
        current_user: nil,
-       user_changes: CRUD.new_user() |> Map.from_struct() |> new_changes()
+       user_changes: CRUD.new_changes()
      )}
   end
 
@@ -123,37 +122,32 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> assign(:current_user, user)
-    |> assign(:user_changes, valid_changes(Map.from_struct(user)))
+    |> assign(:user_changes, CRUD.changes_from_user(user))
     |> noreply()
   end
 
   def handle_event("set-first-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_changes, fn changes -> put_change(changes, :first_name, name) end)
+    |> update(:user_changes, fn changes -> CRUD.put_change(changes, :first_name, name) end)
     |> noreply()
   end
 
   def handle_event("set-last-name", %{"value" => name}, socket) do
     socket
-    |> update(:user_changes, fn changes -> put_change(changes, :last_name, name) end)
+    |> update(:user_changes, fn changes -> CRUD.put_change(changes, :last_name, name) end)
     |> noreply()
   end
 
   def handle_event("create", _, socket) do
-    with {:valid_changes, changes} <- validate_changes(socket.assigns.user_changes),
-         {:ok, user} <- CRUD.create_user(changes) do
-      socket
-      |> update(:users, fn users -> [user | users] end)
-      |> noreply()
-    else
-      {:invalid_changes, changes, errors} ->
+    case CRUD.create_user(socket.assigns.user_changes) do
+      {:ok, user} ->
         socket
-        |> assign(:user_changes, {:invalid_changes, changes, errors})
+        |> update(:users, fn users -> [user | users] end)
         |> noreply()
 
-      {:error, changeset} ->
+      {:invalid_changes, _changes, _errors} = user_changes ->
         socket
-        |> assign(:user_changes, {:invalid_changes, changeset.data, changeset.errors})
+        |> assign(:user_changes, user_changes)
         |> noreply()
     end
   end
@@ -161,20 +155,15 @@ defmodule GuiWeb.CRUDLive do
   def handle_event("update", _, socket) do
     selected_user = find_user(socket.assigns.users, socket.assigns.current_user.id)
 
-    with {:valid_changes, changes} <- validate_changes(socket.assigns.user_changes),
-         {:ok, updated_user} <- CRUD.update_user(selected_user, changes) do
-      socket
-      |> update(:users, &replace_updated_user(&1, updated_user))
-      |> noreply()
-    else
-      {:invalid_changes, changes, errors} ->
+    case CRUD.update_user(selected_user, socket.assigns.user_changes) do
+      {:ok, updated_user} ->
         socket
-        |> assign(:user_changes, {:invalid_changes, changes, errors})
+        |> update(:users, &replace_updated_user(&1, updated_user))
         |> noreply()
 
-      {:error, changeset} ->
+      {:invalid_changes, _changes, _errors} = user_changes ->
         socket
-        |> assign(:user_changes, {:invalid_changes, changeset.data, changeset.errors})
+        |> assign(:user_changes, user_changes)
         |> noreply()
     end
   end
@@ -193,28 +182,6 @@ defmodule GuiWeb.CRUDLive do
     |> assign(:filter, text)
     |> noreply()
   end
-
-  defp validate_changes({:valid_changes, _changes} = user_changes), do: user_changes
-  defp validate_changes({:invalid_changes, _changes, _errors} = user_changes), do: user_changes
-
-  defp validate_changes({:new_changes, changes}) do
-    changeset = %User{} |> User.changeset(changes)
-
-    if changeset.valid? do
-      valid_changes(changes)
-    else
-      invalid_changes(changes, changeset.errors)
-    end
-  end
-
-  defp new_changes(changes), do: {:new_changes, changes}
-  defp valid_changes(changes), do: {:valid_changes, changes}
-  defp invalid_changes(changes, errors), do: {:invalid_changes, changes, errors}
-
-  defp put_change({_type, changes}, key, value), do: {:new_changes, Map.put(changes, key, value)}
-
-  defp put_change({_type, changes, _errors}, key, value),
-    do: {:new_changes, Map.put(changes, key, value)}
 
   defp user_selected?(%{id: id}) when not is_nil(id), do: true
   defp user_selected?(_), do: false

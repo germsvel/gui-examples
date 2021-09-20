@@ -56,7 +56,9 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can update a selected user", %{conn: conn} do
-    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, %{id: id}} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -68,7 +70,9 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user sees errors with invalid name when updating name", %{conn: conn} do
-    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, %{id: id}} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
     {:ok, view, _html} = live(conn, "/crud")
 
     html =
@@ -81,7 +85,9 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "errors are removed when invalid field is fixed for update", %{conn: conn} do
-    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, %{id: id}} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -99,7 +105,9 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can delete a selected user", %{conn: conn} do
-    {:ok, %{id: id}} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, %{id: id}} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -110,8 +118,14 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can filter list of users by Surname prefix (starts with)", %{conn: conn} do
-    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
-    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
+    {:ok, _} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
+    {:ok, _} =
+      Gui.CRUD.create_user(
+        {:valid_changes, %{"first_name" => "Merry", "last_name" => "Brandybuck"}}
+      )
+
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -123,8 +137,14 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can remove filter and see all users again", %{conn: conn} do
-    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
-    {:ok, _} = Gui.CRUD.create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
+    {:ok, _} =
+      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+
+    {:ok, _} =
+      Gui.CRUD.create_user(
+        {:valid_changes, %{"first_name" => "Merry", "last_name" => "Brandybuck"}}
+      )
+
     {:ok, view, _html} = live(conn, "/crud")
 
     view
