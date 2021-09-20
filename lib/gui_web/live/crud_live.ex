@@ -183,7 +183,7 @@ defmodule GuiWeb.CRUDLive do
 
     socket
     |> update(:users, &remove_deleted_user(&1, deleted_user))
-    |> reset_selected_user()
+    |> assign(:current_user, nil)
     |> noreply()
   end
 
@@ -217,11 +217,6 @@ defmodule GuiWeb.CRUDLive do
 
   defp user_selected?(%{id: id}) when not is_nil(id), do: true
   defp user_selected?(_), do: false
-
-  defp reset_selected_user(socket) do
-    socket
-    |> assign(:current_user, CRUD.new_user())
-  end
 
   defp filter_users(users, filter) do
     Enum.filter(users, fn user -> String.starts_with?(user.last_name, filter) end)
