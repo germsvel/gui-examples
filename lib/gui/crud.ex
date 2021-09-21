@@ -9,18 +9,18 @@ defmodule Gui.CRUD do
   @type valid_changes :: %{first_name: String.t(), last_name: String.t()}
   @type errors :: map()
   @type user_changes() ::
-          {:new_changes, potentially_invalid_changes}
+          {:raw_changes, potentially_invalid_changes}
           | {:valid_changes, valid_changes}
           | {:invalid_changes, potentially_invalid_changes, errors}
 
-  def new_changes, do: {:new_changes, %{first_name: nil, last_name: nil}}
+  def new_changes, do: {:raw_changes, %{first_name: nil, last_name: nil}}
 
   def changes_from_user(user), do: {:valid_changes, Map.from_struct(user)}
 
-  def put_change({_type, changes}, key, value), do: {:new_changes, Map.put(changes, key, value)}
+  def put_change({_type, changes}, key, value), do: {:raw_changes, Map.put(changes, key, value)}
 
   def put_change({_type, changes, _errors}, key, value),
-    do: {:new_changes, Map.put(changes, key, value)}
+    do: {:raw_changes, Map.put(changes, key, value)}
 
   def list_users do
     Repo.all(User)
@@ -72,7 +72,7 @@ defmodule Gui.CRUD do
   defp validate_changes({:valid_changes, _changes} = user_changes), do: user_changes
   defp validate_changes({:invalid_changes, _changes, _errors} = user_changes), do: user_changes
 
-  defp validate_changes({:new_changes, changes}) do
+  defp validate_changes({:raw_changes, changes}) do
     changeset = %User{} |> User.changeset(changes)
 
     if changeset.valid? do
