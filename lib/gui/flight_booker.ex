@@ -1,6 +1,14 @@
 defmodule Gui.FlightBooker do
   alias Gui.Booking
 
+  def one_way(date) do
+    {:one_way, date}
+  end
+
+  def two_way(departure, return) do
+    {:two_way, departure, return}
+  end
+
   def flight_types, do: Booking.flight_types()
 
   def new_booking_changes do
@@ -20,20 +28,11 @@ defmodule Gui.FlightBooker do
   def one_way?(%{flight_type: "return flight"}), do: false
   def one_way?(_), do: true
 
-  def book_trip(booking) do
-    booking = Ecto.Changeset.apply_changes(booking)
-    {:ok, booking_message(booking)}
+  def book_trip({:one_way, departure}) do
+    {:ok, "You have booked a one-way flight on #{departure}"}
   end
 
-  defp booking_message(booking) do
-    case booking.flight_type do
-      "one-way flight" ->
-        "You have booked a one-way flight on #{booking.departure}"
-
-      "return flight" ->
-        "You have booked a return flight departing #{booking.departure} and returning #{
-          booking.return
-        }"
-    end
+  def book_trip({:two_way, departure, return}) do
+    {:ok, "You have booked a return flight departing #{departure} and returning #{return}"}
   end
 end

@@ -15,15 +15,14 @@ defmodule GuiWeb.FlightBookerLiveTest do
 
     {:ok, view, _html} = live(conn, "/flight_booker")
 
-    assert has_element?(view, "#flight-type", "one-way flight")
+    assert has_element?(view, "#flight-type", "One-way")
     assert has_element?(view, "#departure-date[value='#{date}']")
-    assert has_element?(view, "#return-date[value='#{date}']")
   end
 
   test "return date is disabled if one-way flight is chosen", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/flight_booker")
 
-    assert has_element?(view, "#flight-type", "one-way flight")
+    assert has_element?(view, "#flight-type", "One-way")
     assert has_element?(view, "#return-date:disabled")
   end
 
@@ -33,7 +32,7 @@ defmodule GuiWeb.FlightBookerLiveTest do
 
     html =
       view
-      |> form("#flight-booker", booking: %{flight_type: "one-way flight", departure: date})
+      |> form("#flight-booker", booking: %{flight_type: "one-way", departure: date})
       |> render_submit()
 
     assert html =~ "You have booked a one-way flight on #{date}"
@@ -43,10 +42,10 @@ defmodule GuiWeb.FlightBookerLiveTest do
     {:ok, view, _html} = live(conn, "/flight_booker")
 
     view
-    |> form("#flight-booker", booking: %{flight_type: "return flight"})
+    |> form("#flight-booker", booking: %{flight_type: "two-way"})
     |> render_change()
 
-    assert has_element?(view, "#flight-type", "return flight")
+    assert has_element?(view, "#flight-type", "Two-way")
   end
 
   test "user can book a return (two-way) flight", %{conn: conn} do
@@ -68,7 +67,7 @@ defmodule GuiWeb.FlightBookerLiveTest do
     {:ok, view, _html} = live(conn, "/flight_booker")
 
     view
-    |> form("#flight-booker", booking: %{flight_type: "one-way flight", departure: invalid_date})
+    |> form("#flight-booker", booking: %{flight_type: "one-way", departure: invalid_date})
     |> render_change()
 
     assert has_element?(view, "#departure-date.invalid")
@@ -102,10 +101,10 @@ defmodule GuiWeb.FlightBookerLiveTest do
   end
 
   defp set_return_flight(view, dates) do
-    flight_data = Map.merge(%{flight_type: "return flight"}, dates)
+    flight_data = Map.merge(%{flight_type: "two-way"}, dates)
 
     view
-    |> change_flight_type("return flight")
+    |> change_flight_type("two-way")
     |> form("#flight-booker", booking: flight_data)
   end
 
