@@ -1,6 +1,14 @@
 defmodule Gui.FlightBooker do
   alias Gui.Booking
 
+  def one_way(date) do
+    {:one_way, date}
+  end
+
+  def two_way(departure, return) do
+    {:two_way, departure, return}
+  end
+
   def parse_one_way(date) do
     date
     |> parse_date()
@@ -10,7 +18,18 @@ defmodule Gui.FlightBooker do
   def parse_two_way(departure_value, return_value) do
     departure = parse_date(departure_value)
     return = parse_date(return_value)
-    two_way(departure, return)
+
+    case {departure, return} do
+      {%Date{}, %Date{}} ->
+        if Date.compare(departure, return) == :gt do
+          two_way(departure, error(return))
+        else
+          two_way(departure, return)
+        end
+
+      _ ->
+        two_way(departure, return)
+    end
   end
 
   defp parse_date(string_date) when is_binary(string_date) do
@@ -21,33 +40,6 @@ defmodule Gui.FlightBooker do
   end
 
   defp error(value), do: {:error, value}
-
-  def one_way(date) do
-    {:one_way, date}
-  end
-
-  def two_way(departure, return) do
-    {:two_way, departure, return}
-  end
-
-  def flight_types, do: Booking.flight_types()
-
-  def new_booking_changes do
-    today = Date.utc_today()
-    booking = %Booking{departure: today, return: today}
-
-    Booking.one_way_changeset(booking)
-  end
-
-  def change_booking(changeset, params) do
-    changeset.data
-    |> Booking.changeset(params)
-    |> Map.put(:action, :insert)
-  end
-
-  def one_way?(%{flight_type: "one-way flight"}), do: true
-  def one_way?(%{flight_type: "return flight"}), do: false
-  def one_way?(_), do: true
 
   def book_trip({:one_way, departure}) do
     {:ok, "You have booked a one-way flight on #{departure}"}

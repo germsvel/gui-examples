@@ -97,7 +97,7 @@ defmodule GuiWeb.FlightBookerLiveTest do
     |> set_return_flight(%{departure: depart, return: return})
     |> render_change()
 
-    assert has_element?(view, "#book-flight:disabled")
+    assert has_element?(view, "#return-date.invalid")
   end
 
   defp set_return_flight(view, dates) do

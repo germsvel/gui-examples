@@ -26,6 +26,7 @@ defmodule GuiWeb.FlightBookerLive do
 
         <% {:two_way, departure, return} -> %>
           <%= select :booking, :flight_type, [[key: "One-way", value: "one-way"], [key: "Two-way", value: "two-way", selected: true]], id: "flight-type" %>
+
           <%= case departure do %>
             <% {:error, value} -> %>
               <%= text_input :booking, :departure, value: value, id: "departure-date", class: "invalid" %>
@@ -45,7 +46,7 @@ defmodule GuiWeb.FlightBookerLive do
           <% end %>
       <% end %>
 
-      <%= submit "Book", phx_click: "book", id: "book-flight" %>
+      <%= submit "Book", id: "book-flight" %>
     </form>
     """
   end
@@ -53,9 +54,8 @@ defmodule GuiWeb.FlightBookerLive do
   def mount(_, _, socket) do
     today = Date.utc_today()
     booker = FlightBooker.one_way(today)
-    flight_types = FlightBooker.flight_types()
 
-    {:ok, assign(socket, booker: booker, flight_types: flight_types)}
+    {:ok, assign(socket, booker: booker)}
   end
 
   def handle_event("update-booking", %{"booking" => params}, socket) do
@@ -92,15 +92,6 @@ defmodule GuiWeb.FlightBookerLive do
         FlightBooker.parse_two_way(departure, return)
     end
   end
-
-  defp date_class(changeset, field) do
-    if changeset.errors[field] do
-      "invalid"
-    end
-  end
-
-  defp one_way_flight?({:one_way, _}), do: true
-  defp one_way_flight?(_), do: false
 
   defp noreply(socket), do: {:noreply, socket}
 end
