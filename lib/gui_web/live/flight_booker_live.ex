@@ -12,13 +12,37 @@ defmodule GuiWeb.FlightBookerLive do
       <%= case @booker do %>
         <% {:one_way, departure} -> %>
           <%= select :booking, :flight_type, [[key: "One-way", value: "one-way", selected: true], [key: "Two-way", value: "two-way"]], id: "flight-type" %>
-          <%= text_input :booking, :departure, value: departure, id: "departure-date" %>
+
+          <%= case departure do %>
+            <% {:error, value} -> %>
+              <%= text_input :booking, :departure, value: value, id: "departure-date", class: "invalid" %>
+              <span class="invalid-feedback">Invalid date</span>
+
+            <% value -> %>
+              <%= text_input :booking, :departure, value: value, id: "departure-date" %>
+          <% end %>
+
           <%= text_input :booking, :return, id: "return-date", disabled: true %>
 
         <% {:two_way, departure, return} -> %>
           <%= select :booking, :flight_type, [[key: "One-way", value: "one-way"], [key: "Two-way", value: "two-way", selected: true]], id: "flight-type" %>
-          <%= text_input :booking, :departure, value: departure, id: "departure-date" %>
-          <%= text_input :booking, :return, value: return, id: "return-date" %>
+          <%= case departure do %>
+            <% {:error, value} -> %>
+              <%= text_input :booking, :departure, value: value, id: "departure-date", class: "invalid" %>
+              <span class="invalid-feedback">Invalid date</span>
+
+            <% value -> %>
+              <%= text_input :booking, :departure, value: value, id: "departure-date" %>
+          <% end %>
+
+          <%= case return do %>
+            <% {:error, value} -> %>
+              <%= text_input :booking, :return, value: value, id: "return-date", class: "invalid" %>
+              <span class="invalid-feedback">Invalid date</span>
+
+            <% value -> %>
+              <%= text_input :booking, :return, value: value, id: "return-date" %>
+          <% end %>
       <% end %>
 
       <%= submit "Book", phx_click: "book", id: "book-flight" %>
@@ -58,19 +82,14 @@ defmodule GuiWeb.FlightBookerLive do
   defp parse_params_into_booking(params) do
     case params do
       %{"flight_type" => "one-way", "departure" => departure} ->
-        departure
-        |> Date.from_iso8601!()
-        |> FlightBooker.one_way()
+        FlightBooker.parse_one_way(departure)
 
       %{"flight_type" => "two-way", "departure" => departure, "return" => return} ->
-        departure_date = departure |> Date.from_iso8601!()
-        return_date = return |> Date.from_iso8601!()
-        FlightBooker.two_way(departure_date, return_date)
+        FlightBooker.parse_two_way(departure, return)
 
       %{"flight_type" => "two-way", "departure" => departure} ->
-        departure_date = departure |> Date.from_iso8601!()
-        return_date = Date.utc_today()
-        FlightBooker.two_way(departure_date, return_date)
+        return = Date.utc_today() |> Date.to_string()
+        FlightBooker.parse_two_way(departure, return)
     end
   end
 

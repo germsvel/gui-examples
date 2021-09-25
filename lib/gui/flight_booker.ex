@@ -1,6 +1,27 @@
 defmodule Gui.FlightBooker do
   alias Gui.Booking
 
+  def parse_one_way(date) do
+    date
+    |> parse_date()
+    |> one_way()
+  end
+
+  def parse_two_way(departure_value, return_value) do
+    departure = parse_date(departure_value)
+    return = parse_date(return_value)
+    two_way(departure, return)
+  end
+
+  defp parse_date(string_date) when is_binary(string_date) do
+    case Date.from_iso8601(string_date) do
+      {:ok, date} -> date
+      {:error, _} -> error(string_date)
+    end
+  end
+
+  defp error(value), do: {:error, value}
+
   def one_way(date) do
     {:one_way, date}
   end
