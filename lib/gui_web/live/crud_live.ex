@@ -36,71 +36,46 @@ defmodule GuiWeb.CRUDLive do
       </div>
 
       <div class="mt-10 space-x-2">
-        <button id="create" type="button" phx-click="create">Create</button>
-
-        <%= if user_selected?(@current_user) do %>
-          <button id="update" type="button" phx-click="update">Update</button>
-          <button id="delete" type="button" phx-click="delete">Delete</button>
-        <% else %>
-          <button id="update" type="button" disabled>Update</button>
-          <button id="delete" type="button" disabled>Delete</button>
-        <% end %>
       </div>
     </div>
     """
   end
 
   def render_inputs(assigns) do
-    case assigns[:user_changes] do
-      {:invalid_changes, changes, errors} ->
-        render_invalid_inputs(assigns, changes, errors)
-
-      {_, changes} ->
-        render_valid_inputs(assigns, changes)
-    end
-  end
-
-  def render_valid_inputs(assigns, changes) do
     ~L"""
-      <div class="grid grid-cols-3 items-baseline gap-4">
-        <label for="first_name">Name:</label>
-        <div class="col-span-2">
-          <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= changes.first_name %>">
-        </div>
-      </div>
+    <%= case @user_changes do %>
+      <% {:new_user, changeset} -> %>
+        <%= f = form_for changeset, "#", [phx_change: :update_params, phx_submit: "create-user"] %>
+          <%= text_input f, :first_name %>
+          <%= error_tag f, :first_name %>
 
-      <div class="grid grid-cols-3 items-baseline gap-4">
-        <label for="last_name">Surname:</label>
+          <%= text_input f, :last_name %>
+          <%= error_tag f, :last_name %>
 
-        <div class="col-span-2">
-          <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= changes.last_name %>">
-        </div>
-      </div>
-    """
-  end
+          <div class="mt-10 space-x-2">
+            <%= submit "Create" %>
+            <button id="update" type="button" disabled>Update</button>
+            <button id="delete" type="button" disabled>Delete</button>
+          </div>
+        </form>
 
-  def render_invalid_inputs(assigns, changes, errors) do
-    ~L"""
-      <div class="grid grid-cols-3 items-baseline gap-4">
-        <label for="first_name">Name:</label>
-        <div class="col-span-2">
-          <input phx-blur="set-first-name" type="text" name="first_name" id="first_name" value="<%= changes.first_name %>">
-          <%= if errors[:first_name] do %>
-            <span class="invalid-feedback"><%= translate_error(errors[:first_name]) %></span>
-          <% end %>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-3 items-baseline gap-4">
-        <label for="last_name">Surname:</label>
+      <% {:existing_user, changeset} -> %>
+        <%= f = form_for changeset, "#", [phx_change: :update_params, phx_submit: "update-user"] %>
+          <%= text_input f, :first_name %>
+          <%= error_tag f, :first_name %>
 
-        <div class="col-span-2">
-          <input phx-blur="set-last-name" type="text" name="last_name" id="last_name" value="<%= changes.last_name %>">
-          <%= if errors[:last_name] do %>
-            <span class="invalid-feedback"><%= translate_error(errors[:last_name]) %></span>
-          <% end %>
-        </div>
-      </div>
+          <%= text_input f, :last_name %>
+          <%= error_tag f, :last_name %>
+
+          <div class="mt-10 space-x-2">
+            <button id="create" type="button" disabled>Create</button>
+            <%= submit "Update" %>
+            <button id="delete" type="button" phx-click="delete-user">Delete</button>
+          </div>
+        </form>
+
+    <% end %>
     """
   end
 
@@ -111,8 +86,7 @@ defmodule GuiWeb.CRUDLive do
      assign(socket,
        users: users,
        filter: "",
-       current_user: nil,
-       user_changes: CRUD.new_changes()
+       user_changes: CRUD.new_user_changes()
      )}
   end
 
@@ -121,59 +95,52 @@ defmodule GuiWeb.CRUDLive do
     user = find_user(socket.assigns.users, user_id)
 
     socket
-    |> assign(:current_user, user)
-    |> assign(:user_changes, CRUD.changes_from_user(user))
+    |> assign(:user_changes, CRUD.existing_user_changes(user))
     |> noreply()
   end
 
-  def handle_event("set-first-name", %{"value" => name}, socket) do
+  def handle_event("update_params", %{"user" => params}, socket) do
     socket
-    |> update(:user_changes, fn changes -> CRUD.put_change(changes, :first_name, name) end)
+    |> assign(:user_changes, CRUD.user_changes(socket.assigns.user_changes, params))
     |> noreply()
   end
 
-  def handle_event("set-last-name", %{"value" => name}, socket) do
-    socket
-    |> update(:user_changes, fn changes -> CRUD.put_change(changes, :last_name, name) end)
-    |> noreply()
-  end
-
-  def handle_event("create", _, socket) do
+  def handle_event("create-user", _, socket) do
     case CRUD.create_user(socket.assigns.user_changes) do
       {:ok, user} ->
         socket
         |> update(:users, fn users -> [user | users] end)
+        |> assign(:user_changes, CRUD.new_user_changes())
         |> noreply()
 
-      {:invalid_changes, _changes, _errors} = user_changes ->
+      {:error, user_changes} ->
         socket
         |> assign(:user_changes, user_changes)
         |> noreply()
     end
   end
 
-  def handle_event("update", _, socket) do
-    selected_user = find_user(socket.assigns.users, socket.assigns.current_user.id)
-
-    case CRUD.update_user(selected_user, socket.assigns.user_changes) do
+  def handle_event("update-user", _, socket) do
+    case CRUD.update_user(socket.assigns.user_changes) do
       {:ok, updated_user} ->
         socket
         |> update(:users, &replace_updated_user(&1, updated_user))
+        |> assign(:user_changes, CRUD.new_user_changes())
         |> noreply()
 
-      {:invalid_changes, _changes, _errors} = user_changes ->
+      {:error, user_changes} ->
         socket
         |> assign(:user_changes, user_changes)
         |> noreply()
     end
   end
 
-  def handle_event("delete", _, socket) do
-    {:ok, deleted_user} = CRUD.delete_user(socket.assigns.current_user)
+  def handle_event("delete-user", _, socket) do
+    {:ok, deleted_user} = CRUD.delete_user(socket.assigns.user_changes)
 
     socket
     |> update(:users, &remove_deleted_user(&1, deleted_user))
-    |> assign(:current_user, nil)
+    |> assign(:user_changes, CRUD.new_user_changes())
     |> noreply()
   end
 
@@ -182,9 +149,6 @@ defmodule GuiWeb.CRUDLive do
     |> assign(:filter, text)
     |> noreply()
   end
-
-  defp user_selected?(%{id: id}) when not is_nil(id), do: true
-  defp user_selected?(_), do: false
 
   defp filter_users(users, filter) do
     Enum.filter(users, fn user -> String.starts_with?(user.last_name, filter) end)

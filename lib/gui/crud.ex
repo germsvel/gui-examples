@@ -2,83 +2,42 @@ defmodule Gui.CRUD do
   alias Gui.CRUD.User
   alias Gui.Repo
 
-  @type potentially_invalid_changes() :: %{
-          first_name: String.t() | nil,
-          last_name: String.t() | nil
-        }
-  @type valid_changes :: %{first_name: String.t(), last_name: String.t()}
-  @type errors :: map()
-  @type user_changes() ::
-          {:raw_changes, potentially_invalid_changes}
-          | {:valid_changes, valid_changes}
-          | {:invalid_changes, potentially_invalid_changes, errors}
+  @type t ::
+          {:new_user, %Ecto.Changeset{}}
+          | {:existing_user, %Ecto.Changeset{}}
 
-  def new_changes, do: {:raw_changes, %{first_name: nil, last_name: nil}}
+  def new_user_changes, do: {:new_user, %User{} |> User.changeset()}
 
-  def changes_from_user(user), do: {:valid_changes, Map.from_struct(user)}
+  def existing_user_changes(user), do: {:existing_user, User.changeset(user)}
 
-  def put_change({_type, changes}, key, value), do: {:raw_changes, Map.put(changes, key, value)}
+  def user_changes({:new_user, _changeset}, params) do
+    {:new_user, User.changeset(%User{}, params)}
+  end
 
-  def put_change({_type, changes, _errors}, key, value),
-    do: {:raw_changes, Map.put(changes, key, value)}
+  def user_changes({:existing_user, changeset}, params) do
+    {:existing_user, User.changeset(changeset, params)}
+  end
 
   def list_users do
     Repo.all(User)
   end
 
-  def create_user(user_changes) do
-    with {:valid_changes, changes} <- validate_changes(user_changes),
-         {:ok, user} <- insert_user(changes) do
-      {:ok, user}
-    else
-      {:invalid_changes, _changes, _errors} = invalid_changes ->
-        invalid_changes
-
-      {:error, changeset} ->
-        {:invalid_changes, changeset.data, changeset.errors}
+  def create_user({_, changeset}) do
+    case Repo.insert(changeset) do
+      {:ok, _user} = success -> success
+      {:error, changeset} -> {:error, {:new_user, changeset}}
     end
   end
 
-  def update_user(user, user_changes) do
-    with {:valid_changes, changes} <- validate_changes(user_changes),
-         {:ok, user} <- do_update_user(user, changes) do
-      {:ok, user}
-    else
-      {:invalid_changes, _changes, _errors} = invalid_changes ->
-        invalid_changes
-
-      {:error, changeset} ->
-        {:invalid_changes, changeset.data, changeset.errors}
+  def update_user({:existing_user, changeset}) do
+    case Repo.update(changeset) do
+      {:ok, _user} = success -> success
+      {:error, changeset} -> {:error, {:existing_user, changeset}}
     end
   end
 
-  def delete_user(user) do
-    user
+  def delete_user({:existing_user, changeset}) do
+    changeset
     |> Repo.delete()
-  end
-
-  defp insert_user(params) do
-    %User{}
-    |> User.changeset(params)
-    |> Repo.insert()
-  end
-
-  defp do_update_user(user, params) do
-    user
-    |> User.changeset(params)
-    |> Repo.update()
-  end
-
-  defp validate_changes({:valid_changes, _changes} = user_changes), do: user_changes
-  defp validate_changes({:invalid_changes, _changes, _errors} = user_changes), do: user_changes
-
-  defp validate_changes({:raw_changes, changes}) do
-    changeset = %User{} |> User.changeset(changes)
-
-    if changeset.valid? do
-      {:valid_changes, changes}
-    else
-      {:invalid_changes, changes, changeset.errors}
-    end
   end
 end
