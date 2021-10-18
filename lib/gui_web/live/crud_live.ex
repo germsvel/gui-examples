@@ -13,7 +13,7 @@ defmodule GuiWeb.CRUDLive do
 
     <h1>CRUD</h1>
 
-    <div id="new-user">
+    <div>
       <form phx-change="filter-list" id="list-filter">
         <div class="flex flex-row items-baseline space-x-4">
           <label for="filter">Filter prefix:</label>
@@ -55,7 +55,7 @@ defmodule GuiWeb.CRUDLive do
     ~L"""
     <%= case @user_changes do %>
       <% {:new_user, changeset} -> %>
-        <%= f = form_for changeset, "#", [phx_change: :update_params, phx_submit: "create-user"] %>
+        <%= f = form_for changeset, "#", [id: "new-user", phx_change: :update_params, phx_submit: "create-user"] %>
           <%= text_input f, :first_name %>
           <%= error_tag f, :first_name %>
 
@@ -70,8 +70,8 @@ defmodule GuiWeb.CRUDLive do
         </form>
 
 
-      <% {:selected_user, user, changeset} -> %>
-        <%= f = form_for changeset, "#", [phx_change: :update_params, phx_submit: "update-user"] %>
+      <% {:selected_user, _user, changeset} -> %>
+        <%= f = form_for changeset, "#", [id: "update-user", phx_change: :update_params, phx_submit: "update-user"] %>
           <%= text_input f, :first_name %>
           <%= error_tag f, :first_name %>
 

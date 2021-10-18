@@ -3,6 +3,8 @@ defmodule GuiWeb.CrudLiveTest do
 
   import Phoenix.LiveViewTest
 
+  alias Gui.CRUD
+
   test "renders a CRUD interface", %{conn: conn} do
     {:ok, _view, html} = live(conn, "/crud")
 
@@ -21,92 +23,51 @@ defmodule GuiWeb.CrudLiveTest do
 
     html =
       view
-      |> set_first_name("Frodo")
-      |> set_last_name("")
-      |> submit_create()
+      |> enter_new_name("Frodo", "")
+      |> render_submit()
 
     assert html =~ "can&#39;t be blank"
-  end
-
-  test "errors are removed when invalid field is fixed for create", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/crud")
-
-    view
-    |> set_first_name("Frodo")
-    |> set_last_name("")
-    |> submit_create()
-
-    html =
-      view
-      |> set_last_name("Baggins")
-      |> submit_create()
-
-    refute html =~ "can&#39;t be blank"
   end
 
   test "user can enter a new name into user list", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/crud")
 
     view
-    |> set_first_name("Frodo")
-    |> set_last_name("Baggins")
-    |> submit_create()
+    |> enter_new_name("Frodo", "Baggins")
+    |> render_submit()
 
     assert has_element?(view, "#user-list", "Baggins, Frodo")
   end
 
   test "user can update a selected user", %{conn: conn} do
-    {:ok, %{id: id}} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+    {:ok, %{id: id}} = create_user(%{"first_name" => "Frod", "last_name" => "Bagginses"})
 
     {:ok, view, _html} = live(conn, "/crud")
 
     view
     |> select_user(id)
-    |> set_first_name("Bilbo")
-    |> submit_update()
+    |> update_fields("Frodo", "Baggins")
+    |> render_submit()
 
-    assert has_element?(view, "#user-list", "Baggins, Bilbo")
+    assert has_element?(view, "#user-list", "Baggins, Frodo")
   end
 
   test "user sees errors with invalid name when updating name", %{conn: conn} do
-    {:ok, %{id: id}} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+    {:ok, %{id: id}} = create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
 
     {:ok, view, _html} = live(conn, "/crud")
 
     html =
       view
       |> select_user(id)
-      |> set_first_name("")
-      |> submit_update()
+      |> update_fields("", "Baggins")
+      |> render_submit()
 
     assert html =~ "can&#39;t be blank"
   end
 
-  test "errors are removed when invalid field is fixed for update", %{conn: conn} do
-    {:ok, %{id: id}} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
-
-    {:ok, view, _html} = live(conn, "/crud")
-
-    view
-    |> select_user(id)
-    |> set_first_name("")
-    |> submit_update()
-
-    html =
-      view
-      |> select_user(id)
-      |> set_first_name("Bilbo")
-      |> submit_update()
-
-    refute html =~ "can&#39;t be blank"
-  end
-
   test "user can delete a selected user", %{conn: conn} do
-    {:ok, %{id: id}} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
+    {:ok, %{id: id}} = create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
 
     {:ok, view, _html} = live(conn, "/crud")
 
@@ -118,14 +79,8 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can filter list of users by Surname prefix (starts with)", %{conn: conn} do
-    {:ok, _} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
-
-    {:ok, _} =
-      Gui.CRUD.create_user(
-        {:valid_changes, %{"first_name" => "Merry", "last_name" => "Brandybuck"}}
-      )
-
+    {:ok, _} = create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, _} = create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -137,14 +92,8 @@ defmodule GuiWeb.CrudLiveTest do
   end
 
   test "user can remove filter and see all users again", %{conn: conn} do
-    {:ok, _} =
-      Gui.CRUD.create_user({:valid_changes, %{"first_name" => "Frodo", "last_name" => "Baggins"}})
-
-    {:ok, _} =
-      Gui.CRUD.create_user(
-        {:valid_changes, %{"first_name" => "Merry", "last_name" => "Brandybuck"}}
-      )
-
+    {:ok, _} = create_user(%{"first_name" => "Frodo", "last_name" => "Baggins"})
+    {:ok, _} = create_user(%{"first_name" => "Merry", "last_name" => "Brandybuck"})
     {:ok, view, _html} = live(conn, "/crud")
 
     view
@@ -171,31 +120,31 @@ defmodule GuiWeb.CrudLiveTest do
     view
   end
 
-  defp set_first_name(view, name) do
-    view
-    |> element("[name='first_name']")
-    |> render_blur(%{value: name})
-
-    view
-  end
-
-  defp set_last_name(view, name) do
-    view
-    |> element("[name='last_name']")
-    |> render_blur(%{value: name})
-
-    view
-  end
-
-  defp submit_create(view) do
-    view |> element("#create") |> render_click()
-  end
-
-  defp submit_update(view) do
-    view |> element("#update") |> render_click()
-  end
-
   defp submit_delete(view) do
     view |> element("#delete") |> render_click()
+  end
+
+  defp enter_new_name(view, first, last) do
+    view
+    |> form("#new-user", user: %{first_name: first, last_name: last})
+    |> render_change()
+
+    view
+    |> form("#new-user", user: %{first_name: first, last_name: last})
+  end
+
+  defp update_fields(view, first, last) do
+    view
+    |> form("#update-user", user: %{first_name: first, last_name: last})
+    |> render_change()
+
+    view
+    |> form("#update-user", user: %{first_name: first, last_name: last})
+  end
+
+  defp create_user(params) do
+    %CRUD.User{}
+    |> CRUD.User.changeset(params)
+    |> Gui.Repo.insert()
   end
 end
