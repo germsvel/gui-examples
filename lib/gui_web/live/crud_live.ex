@@ -17,7 +17,7 @@ defmodule GuiWeb.CRUDLive do
       <form phx-change="filter-list" id="list-filter">
         <div class="flex flex-row items-baseline space-x-4">
           <label for="filter">Filter prefix:</label>
-          <input class="max-w-sm" type="text" name="filter">
+          <input class="max-w-sm" type="text" name="filter" value="<%= @filter %>">
         </div>
       </form>
 
@@ -25,7 +25,17 @@ defmodule GuiWeb.CRUDLive do
         <div>
           <select class="appearance-none" name="selected_user" id="user-list" size="<%= length(@users) %>">
             <%= for user <- filter_users(@users, @filter) do %>
-              <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+              <%= case @user_changes do %>
+                <% {:new_user, _changeset} -> %>
+                  <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+
+                <% {:selected_user, selected_user, _changeset} -> %>
+                  <%= if selected_user.id == user.id do %>
+                    <option selected phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+                  <% else %>
+                    <option phx-click="select-user" id="user-<%= user.id %>" value="<%= user.id %>"><%= user.last_name %>, <%= user.first_name %></option>
+                  <% end %>
+              <% end %>
             <% end %>
           </select>
         </div>
@@ -60,7 +70,7 @@ defmodule GuiWeb.CRUDLive do
         </form>
 
 
-      <% {:existing_user, changeset} -> %>
+      <% {:selected_user, user, changeset} -> %>
         <%= f = form_for changeset, "#", [phx_change: :update_params, phx_submit: "update-user"] %>
           <%= text_input f, :first_name %>
           <%= error_tag f, :first_name %>
@@ -95,7 +105,7 @@ defmodule GuiWeb.CRUDLive do
     user = find_user(socket.assigns.users, user_id)
 
     socket
-    |> assign(:user_changes, CRUD.existing_user_changes(user))
+    |> assign(:user_changes, CRUD.selected_user_changes(user))
     |> noreply()
   end
 
