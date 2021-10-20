@@ -8,7 +8,7 @@ defmodule Gui.CRUD do
 
   def new_user_changes, do: {:new_user, %User{} |> User.changeset()}
 
-  def selected_user_changes(user), do: {:selected_user, user, User.changeset(user)}
+  def selected_user_changes(%User{} = user), do: {:selected_user, user, User.changeset(user)}
 
   def user_changes({:new_user, _changeset}, params) do
     {:new_user, User.changeset(%User{}, params)}
@@ -22,7 +22,7 @@ defmodule Gui.CRUD do
     Repo.all(User)
   end
 
-  def create_user({_, changeset}) do
+  def create_user({:new_user, changeset}) do
     case Repo.insert(changeset) do
       {:ok, _user} = success -> success
       {:error, changeset} -> {:error, {:new_user, changeset}}
