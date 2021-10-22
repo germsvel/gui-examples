@@ -11,11 +11,11 @@ defmodule Gui.CRUD do
   def selected_user_changes(%User{} = user), do: {:selected_user, user, User.changeset(user)}
 
   def user_changes({:new_user, _changeset}, params) do
-    {:new_user, User.changeset(%User{}, params)}
+    {:new_user, %User{} |> User.changeset(params) |> Map.put(:action, :insert)}
   end
 
   def user_changes({:selected_user, user, _changeset}, params) do
-    {:selected_user, user, User.changeset(user, params)}
+    {:selected_user, user, user |> User.changeset(params) |> Map.put(:action, :update)}
   end
 
   def list_users do
