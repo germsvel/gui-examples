@@ -27,6 +27,58 @@ Hooks.Slider = {
   }
 }
 
+Hooks.CircleDrawer = {
+  mounted() {
+    let svg = this.el;
+
+    this.el.addEventListener("click", (e) => {
+      let pt = svg.createSVGPoint();
+
+      // pass event coordinates
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+
+      // transform to SVG coordinates
+      let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let x = svgP.x;
+      let y = svgP.y;
+
+      this.pushEvent("canvas-click", {x, y})
+    });
+  }
+}
+
+Hooks.SelectedCircle = {
+  mounted() {
+    this.el.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+
+      let modal = document.getElementById("modal");
+      let content = document.getElementById("modal-content");
+      modal.style.display = "block";
+      content.style.display = "block";
+      return false
+    })
+  }
+}
+
+Hooks.CircleDiameterSlider = {
+  mounted() {
+    this.el.addEventListener("input", (e) => {
+      let radius = e.target.value;
+      let selected = document.getElementById("selected-circle");
+
+      selected.setAttribute('r', radius)
+    });
+
+    this.el.addEventListener("update-selected-radius", (e) => {
+      let radius = e.target.value;
+
+      this.pushEvent("selected-circle-radius-updated", {r: radius});
+    });
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 
