@@ -23,6 +23,7 @@ defmodule GuiWeb.Router do
     live "/flight_booker", FlightBookerLive
     live "/timer", TimerLive
     live "/crud", CRUDLive
+    live "/circle_drawer", CircleDrawerLive
   end
 
   # Other scopes may use custom stacks.
