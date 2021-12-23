@@ -31,6 +31,7 @@ Hooks.CircleDrawer = {
   mounted() {
     let canvas = this.el;
     let ctx = this.el.getContext('2d');
+    const beginningRadius = 10;
 
     // ctx.arc(x, y, radius, startAngle, endAngle [, counterclockwise]);
 
@@ -45,7 +46,7 @@ Hooks.CircleDrawer = {
 
       ctx.beginPath();
       ctx.moveTo(x, y);
-      circle.arc(x, y, 10, 0, 2 * Math.PI);
+      circle.arc(x, y, beginningRadius, 0, 2 * Math.PI);
       ctx.fill(circle);
     });
 
