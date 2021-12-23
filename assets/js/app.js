@@ -27,6 +27,31 @@ Hooks.Slider = {
   }
 }
 
+Hooks.CircleDrawer = {
+  mounted() {
+    let canvas = this.el;
+    let ctx = this.el.getContext('2d');
+    let circle = new Path2D();
+
+    // ctx.arc(x, y, radius, startAngle, endAngle [, counterclockwise]);
+
+    this.el.addEventListener("click", (e) => {
+      let rect = canvas.getBoundingClientRect()
+      console.log(e)
+      console.log(e.clientX)
+      console.log(e.clientY)
+      let x = e.clientX - rect.left
+      let y = e.clientY - rect.top
+      circle.arc(x, y, 25, 0, 2 * Math.PI);
+      ctx.fill(circle);
+    });
+
+    this.el.addEventListener("reset", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 
