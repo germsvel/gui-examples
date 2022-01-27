@@ -31,7 +31,6 @@ Hooks.CircleDrawer = {
   mounted() {
     let canvas = this.el;
     let ctx = this.el.getContext('2d');
-    const beginningRadius = 10;
 
     // ctx.arc(x, y, radius, startAngle, endAngle [, counterclockwise]);
 
@@ -42,13 +41,28 @@ Hooks.CircleDrawer = {
       console.log(e.clientY)
       let x = e.clientX - rect.left
       let y = e.clientY - rect.top
+
+      this.pushEvent("canvas-click", {x: x, y: y})
+    });
+
+    this.handleEvent("draw-circle", ({x, y, radius}) => {
+      console.log("hello")
+      console.log(x, y)
       let circle = new Path2D();
 
       ctx.beginPath();
       ctx.moveTo(x, y);
-      circle.arc(x, y, beginningRadius, 0, 2 * Math.PI);
+      circle.arc(x, y, radius, 0, 2 * Math.PI);
       ctx.stroke(circle);
-      // ctx.fill(circle);
+    });
+
+    this.handleEvent("fill-circle", ({x, y, radius}) => {
+      let circle = new Path2D();
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      circle.arc(x, y, radius, 0, 2 * Math.PI);
+      ctx.fill(circle);
     });
 
     this.el.addEventListener("reset", () => {
