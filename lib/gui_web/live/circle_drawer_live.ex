@@ -34,11 +34,11 @@ defmodule GuiWeb.CircleDrawerLive do
     circles = socket.assigns.circles
 
     case existing_circle(circles, {x, y}) do
-      {original_x, original_y, radius} ->
+      {{original_x, original_y}, radius} ->
         response = %{action: "fill-circle", x: original_x, y: original_y, radius: radius}
         {:reply, response, socket}
 
-      :no_circle ->
+      nil ->
         response = %{action: "draw-circle", x: x, y: y, radius: @beginning_radius}
         updated_circles = add_circle(circles, {x, y, @beginning_radius})
 
@@ -50,10 +50,13 @@ defmodule GuiWeb.CircleDrawerLive do
     Map.put(circles, {x, y}, radius)
   end
 
-  defp existing_circle(circles, {x, y} = coordinates) do
-    case circles[coordinates] do
-      nil -> :no_circle
-      radius -> {x, y, radius}
-    end
+  defp existing_circle(circles, coordinates) do
+    Enum.find(circles, fn circle ->
+      within_circle?(circle, coordinates)
+    end)
+  end
+
+  defp within_circle?({{circle_x, circle_y}, radius}, {x, y}) do
+    :math.pow(x - circle_x, 2) + :math.pow(y - circle_y, 2) <= :math.pow(radius, 2)
   end
 end
