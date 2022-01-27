@@ -47,7 +47,8 @@ Hooks.CircleDrawer = {
       ctx.beginPath();
       ctx.moveTo(x, y);
       circle.arc(x, y, beginningRadius, 0, 2 * Math.PI);
-      ctx.fill(circle);
+      ctx.stroke(circle);
+      // ctx.fill(circle);
     });
 
     this.el.addEventListener("reset", () => {
