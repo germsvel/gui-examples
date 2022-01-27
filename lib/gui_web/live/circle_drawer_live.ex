@@ -5,13 +5,15 @@ defmodule GuiWeb.CircleDrawerLive do
 
   def render(assigns) do
     ~H"""
-    <h1>CircleDraw</h1>
+    <h1 class="font-semibold">CircleDraw</h1>
 
-    <canvas phx-hook="CircleDrawer" class="border-2 border-gray-800" id="circle-drawer" width="300" height="300">
-      Circle Drawer Canvas
-    </canvas>
+    <div class="mx-auto">
+      <canvas phx-hook="CircleDrawer" class="border-2 border-gray-800" id="circle-drawer" width="500" height="500">
+        Circle Drawer Canvas
+      </canvas>
 
-    <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
+      <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
+    </div>
     """
   end
 end
