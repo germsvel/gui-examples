@@ -9,11 +9,29 @@ defmodule GuiWeb.CircleDrawerLiveTest do
     assert html =~ "CircleDraw"
   end
 
-  test "calls for drawing a circle when the canvas is clicked", %{conn: conn} do
+  test "clicking on canvas draws a new circle", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/circle_drawer")
 
     render_hook(view, "canvas-click", %{x: 2, y: 4})
 
     assert_reply view, %{action: "draw-circle", x: 2, y: 4, radius: 10}
+  end
+
+  test "clicking on the same circle (exactly), fills the original circle", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/circle_drawer")
+
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+
+    assert_reply view, %{action: "fill-circle", x: 2, y: 4, radius: 10}
+  end
+
+  test "clicking within an existing circle, fills the original circle", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/circle_drawer")
+
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_hook(view, "canvas-click", %{x: 3, y: 5})
+
+    assert_reply view, %{action: "fill-circle", x: 2, y: 4, radius: 10}
   end
 end

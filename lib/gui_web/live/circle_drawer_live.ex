@@ -21,9 +21,39 @@ defmodule GuiWeb.CircleDrawerLive do
   end
 
   @impl true
-  def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
-    response = %{action: "draw-circle", x: x, y: y, radius: @beginning_radius}
+  def mount(_, _, socket) do
+    socket =
+      socket
+      |> assign(:circles, %{})
 
-    {:reply, response, socket}
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
+    circles = socket.assigns.circles
+
+    case existing_circle(circles, {x, y}) do
+      {original_x, original_y, radius} ->
+        response = %{action: "fill-circle", x: original_x, y: original_y, radius: radius}
+        {:reply, response, socket}
+
+      :no_circle ->
+        response = %{action: "draw-circle", x: x, y: y, radius: @beginning_radius}
+        updated_circles = add_circle(circles, {x, y, @beginning_radius})
+
+        {:reply, response, assign(socket, :circles, updated_circles)}
+    end
+  end
+
+  defp add_circle(circles, {x, y, radius}) do
+    Map.put(circles, {x, y}, radius)
+  end
+
+  defp existing_circle(circles, {x, y} = coordinates) do
+    case circles[coordinates] do
+      nil -> :no_circle
+      radius -> {x, y, radius}
+    end
   end
 end
