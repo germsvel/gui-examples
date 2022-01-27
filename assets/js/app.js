@@ -42,27 +42,25 @@ Hooks.CircleDrawer = {
       let x = e.clientX - rect.left
       let y = e.clientY - rect.top
 
-      this.pushEvent("canvas-click", {x: x, y: y})
-    });
+      this.pushEvent("canvas-click", {x: x, y: y}, (response) => {
+        let {action, x, y, radius} = response
 
-    this.handleEvent("draw-circle", ({x, y, radius}) => {
-      console.log("hello")
-      console.log(x, y)
-      let circle = new Path2D();
+        if (action == "draw-circle") {
+          let circle = new Path2D();
 
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      circle.arc(x, y, radius, 0, 2 * Math.PI);
-      ctx.stroke(circle);
-    });
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          circle.arc(x, y, radius, 0, 2 * Math.PI);
+          ctx.stroke(circle);
+        } else if (action == "fill-circle") {
+          let circle = new Path2D();
 
-    this.handleEvent("fill-circle", ({x, y, radius}) => {
-      let circle = new Path2D();
-
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      circle.arc(x, y, radius, 0, 2 * Math.PI);
-      ctx.fill(circle);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          circle.arc(x, y, radius, 0, 2 * Math.PI);
+          ctx.fill(circle);
+        }
+      })
     });
 
     this.el.addEventListener("reset", () => {

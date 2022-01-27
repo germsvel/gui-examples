@@ -5,6 +5,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
   @beginning_radius 10
 
+  @impl true
   def render(assigns) do
     ~H"""
     <h1 class="font-semibold">CircleDraw</h1>
@@ -21,6 +22,8 @@ defmodule GuiWeb.CircleDrawerLive do
 
   @impl true
   def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
-    {:noreply, push_event(socket, "draw-circle", %{x: x, y: y, radius: @beginning_radius})}
+    response = %{action: "draw-circle", x: x, y: y, radius: @beginning_radius}
+
+    {:reply, response, socket}
   end
 end
