@@ -63,6 +63,14 @@ Hooks.CircleDrawer = {
       })
     });
 
+    this.el.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      let menu = document.getElementById("menu")
+      menu.hidden = false
+      return false;
+    });
+
+
     this.el.addEventListener("reset", () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     });

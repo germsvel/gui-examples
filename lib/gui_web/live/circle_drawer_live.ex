@@ -17,7 +17,58 @@ defmodule GuiWeb.CircleDrawerLive do
 
       <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
     </div>
+
+    <div id="menu" hidden class="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
+      <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+        <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
+          <a href="#" phx-click={hide_menu_and_show_modal()} class="-m-3 p-3 block rounded-md hover:bg-gray-50 transition ease-in-out duration-150">
+            <p class="text-base font-medium text-gray-900">
+              Adjust diameter ...
+            </p>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal" hidden class="phx-modal" phx-remove={hide_modal()}>
+      <div
+        id="modal-content"
+        class="phx-modal-content"
+        phx-click-away={hide_modal()}
+        phx-window-keydown={hide_modal()}
+        phx-key="escape"
+      >
+        <button class="phx-modal-close bg-white border-none hover:bg-gray-100 hover:border-gray-100" phx-click={hide_modal()}>✖</button>
+
+        <div class="mt-3 text-center sm:mt-5">
+          <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
+            Adjust diameter of circle at (x, y)
+          </h3>
+          <div class="mt-2">
+            <input type="range" id="diameter-slider" name="diameter-slider" min="0" max="100" step="1">
+          </div>
+        </div>
+      </div>
+    </div>
     """
+  end
+
+  defp hide_menu_and_show_modal() do
+    %JS{}
+    |> JS.hide(transition: "fade-out", to: "#menu")
+    |> show_modal()
+  end
+
+  defp show_modal(js \\ %JS{}) do
+    js
+    |> JS.show(transition: "fade-in", to: "#modal")
+    |> JS.show(transition: "fade-in-scale", to: "#modal-content")
+  end
+
+  defp hide_modal do
+    %JS{}
+    |> JS.hide(transition: "fade-out", to: "#modal")
+    |> JS.hide(transition: "fade-out-scale", to: "#modal-content")
   end
 
   @impl true
