@@ -65,7 +65,11 @@ Hooks.CircleDrawer = {
 
     this.el.addEventListener('contextmenu', function(e) {
       e.preventDefault();
-      let menu = document.getElementById("menu")
+      console.log(e)
+      console.log(e.clientX)
+      console.log(e.clientY)
+
+      let menu = document.getElementById("modal")
       menu.hidden = false
       return false;
     });
