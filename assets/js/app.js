@@ -65,12 +65,19 @@ Hooks.CircleDrawer = {
 
     this.el.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+      let rect = canvas.getBoundingClientRect()
       console.log(e)
       console.log(e.clientX)
       console.log(e.clientY)
+      let x = e.clientX - rect.left
+      let y = e.clientY - rect.top
+      console.log(x)
+      console.log(y)
 
       let menu = document.getElementById("modal")
-      menu.hidden = false
+      let content = document.getElementById("modal-content")
+      menu.style.display = 'block';
+      content.style.display = 'block';
       return false;
     });
 
@@ -82,7 +89,7 @@ Hooks.CircleDrawer = {
 }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: {_csrf_token: csrfToken} })
 
 // Show progress bar on live navigation and form submits
 window.addEventListener("phx:page-loading-start", info => NProgress.start())

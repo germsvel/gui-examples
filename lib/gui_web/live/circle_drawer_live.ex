@@ -18,18 +18,6 @@ defmodule GuiWeb.CircleDrawerLive do
       <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
     </div>
 
-    <div id="menu" hidden class="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
-      <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
-        <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
-          <a href="#" phx-click={hide_menu_and_show_modal()} class="-m-3 p-3 block rounded-md hover:bg-gray-50 transition ease-in-out duration-150">
-            <p class="text-base font-medium text-gray-900">
-              Adjust diameter ...
-            </p>
-          </a>
-        </div>
-      </div>
-    </div>
-
     <div id="modal" class="phx-modal hidden" phx-remove={hide_modal()}>
       <div
         id="modal-content"
