@@ -18,18 +18,6 @@ defmodule GuiWeb.CircleDrawerLive do
       <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
     </div>
 
-    <div class="mx-auto">
-      <svg>
-        <circle cx={6} cy={4} r={10} fill="#ccc" />
-        <%= for circle <- @circles do %>
-          <circle cx={circle.cx} cy={circle.cy} r={circle.r}
-            phx-click='select(circle, event)'
-            fill='{circle === selected ? "#ccc": "white"}'
-          />
-        <% end %>
-      </svg>
-    </div>
-
     <div id="menu" hidden class="absolute z-10 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-xs sm:px-0">
       <div class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
         <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
@@ -42,7 +30,7 @@ defmodule GuiWeb.CircleDrawerLive do
       </div>
     </div>
 
-    <div id="modal" hidden class="phx-modal" phx-remove={hide_modal()}>
+    <div id="modal" class="phx-modal hidden" phx-remove={hide_modal()}>
       <div
         id="modal-content"
         class="phx-modal-content"
