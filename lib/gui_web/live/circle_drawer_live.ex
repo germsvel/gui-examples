@@ -3,7 +3,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
   alias Phoenix.LiveView.JS
 
-  @beginning_radius 10
+  @beginning_radius 1
 
   @impl true
   def render(assigns) do
@@ -11,11 +11,13 @@ defmodule GuiWeb.CircleDrawerLive do
     <h1 class="font-semibold">CircleDraw</h1>
 
     <div class="mx-auto">
-      <canvas phx-hook="CircleDrawer" class="border-2 border-gray-800" id="circle-drawer" width="500" height="500">
-        Circle Drawer Canvas
-      </canvas>
+      <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100">
+        <%= for {{x, y}, r} <- @circles do %>
+          <circle cx={x} cy={y} r={r} fill="#ddd"></circle>
+        <% end %>
+      </svg>
 
-      <button class="mt-10" phx-click={JS.dispatch("reset", to: "#circle-drawer")} type="button">Reset</button>
+      <button class="mt-10" phx-click="reset" type="button">Reset</button>
     </div>
 
     <div id="modal" class="phx-modal hidden" phx-remove={hide_modal()}>
@@ -74,15 +76,20 @@ defmodule GuiWeb.CircleDrawerLive do
 
     case existing_circle(circles, {x, y}) do
       {{original_x, original_y}, radius} ->
-        response = %{action: "fill-circle", x: original_x, y: original_y, radius: radius}
-        {:reply, response, socket}
+        # SELECTED circle
+        # response = %{action: "fill-circle", x: original_x, y: original_y, radius: radius}
+        {:noreply, socket}
 
       nil ->
-        response = %{action: "draw-circle", x: x, y: y, radius: @beginning_radius}
         updated_circles = add_circle(circles, {x, y, @beginning_radius})
 
-        {:reply, response, assign(socket, :circles, updated_circles)}
+        {:noreply, assign(socket, :circles, updated_circles)}
     end
+  end
+
+  @impl true
+  def handle_event("reset", _, socket) do
+    {:noreply, assign(socket, :circles, %{})}
   end
 
   defp add_circle(circles, {x, y, radius}) do

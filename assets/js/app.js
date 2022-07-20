@@ -29,61 +29,19 @@ Hooks.Slider = {
 
 Hooks.CircleDrawer = {
   mounted() {
-    let canvas = this.el;
-    let ctx = this.el.getContext('2d');
-
-    // ctx.arc(x, y, radius, startAngle, endAngle [, counterclockwise]);
+    let svg = this.el;
 
     this.el.addEventListener("click", (e) => {
-      let rect = canvas.getBoundingClientRect()
-      console.log(e)
-      console.log(e.clientX)
-      console.log(e.clientY)
-      let x = e.clientX - rect.left
-      let y = e.clientY - rect.top
+      const pt = svg.createSVGPoint();
 
-      this.pushEvent("canvas-click", {x: x, y: y}, (response) => {
-        let {action, x, y, radius} = response
+      // pass event coordinates
+      pt.x = e.clientX;
+      pt.y = e.clientY;
 
-        if (action == "draw-circle") {
-          let circle = new Path2D();
+      // transform to SVG coordinates
+      const svgP = pt.matrixTransform( svg.getScreenCTM().inverse() );
 
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          circle.arc(x, y, radius, 0, 2 * Math.PI);
-          ctx.stroke(circle);
-        } else if (action == "fill-circle") {
-          let circle = new Path2D();
-
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          circle.arc(x, y, radius, 0, 2 * Math.PI);
-          ctx.fill(circle);
-        }
-      })
-    });
-
-    this.el.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      let rect = canvas.getBoundingClientRect()
-      console.log(e)
-      console.log(e.clientX)
-      console.log(e.clientY)
-      let x = e.clientX - rect.left
-      let y = e.clientY - rect.top
-      console.log(x)
-      console.log(y)
-
-      let menu = document.getElementById("modal")
-      let content = document.getElementById("modal-content")
-      menu.style.display = 'block';
-      content.style.display = 'block';
-      return false;
-    });
-
-
-    this.el.addEventListener("reset", () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.pushEvent("canvas-click", {x: svgP.x, y: svgP.y})
     });
   }
 }
