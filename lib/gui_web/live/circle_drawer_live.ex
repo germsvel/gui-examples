@@ -100,7 +100,6 @@ defmodule GuiWeb.CircleDrawerLive do
 
     case existing_circle(circles, {x, y}) do
       {{_original_x, _original_y}, _radius} = circle ->
-        # SELECTED circle
         {:noreply, assign(socket, :selected_circle, circle)}
 
       nil ->
@@ -112,8 +111,13 @@ defmodule GuiWeb.CircleDrawerLive do
 
   @impl true
   def handle_event("reset", _, socket) do
-    {:noreply, assign(socket, :circles, %{})}
+    socket
+    |> assign(:circles, %{})
+    |> assign(:selected_circle, nil)
+    |> noreply()
   end
+
+  defp noreply(socket), do: {:noreply, socket}
 
   defp add_circle(circles, {x, y, radius}) do
     Map.put(circles, {x, y}, radius)
