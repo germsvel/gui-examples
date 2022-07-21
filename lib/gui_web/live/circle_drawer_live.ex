@@ -18,7 +18,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
         <%= case @selected_circle do %>
           <%= {{x, y}, r} -> %>
-            <circle cx={x} cy={y} r={r} fill="#deg" phx-value-x={x} phx-value-y={y}></circle>
+            <circle cx={x} cy={y} r={r} fill="#deg"></circle>
           <%= _ -> %>
         <% end %>
       </svg>

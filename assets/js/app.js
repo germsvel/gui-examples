@@ -43,6 +43,15 @@ Hooks.CircleDrawer = {
 
       this.pushEvent("canvas-click", {x: svgP.x, y: svgP.y})
     });
+
+    this.el.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      let modal = document.getElementById("modal");
+      let content = document.getElementById("modal-content");
+      modal.style.display = "block";
+      content.style.display = "block";
+      return false
+    })
   }
 }
 
