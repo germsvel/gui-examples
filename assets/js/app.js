@@ -30,22 +30,41 @@ Hooks.Slider = {
 Hooks.CircleDrawer = {
   mounted() {
     let svg = this.el;
+    let NS = svg.getAttribute('xmlns');
 
     this.el.addEventListener("click", (e) => {
-      const pt = svg.createSVGPoint();
+      let pt = svg.createSVGPoint();
 
       // pass event coordinates
       pt.x = e.clientX;
       pt.y = e.clientY;
 
       // transform to SVG coordinates
-      const svgP = pt.matrixTransform( svg.getScreenCTM().inverse() );
+      let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let x = svgP.x;
+      let y = svgP.y;
+      let radius = 2;
 
-      this.pushEvent("canvas-click", {x: svgP.x, y: svgP.y})
+      let circle = document.createElementNS(NS, 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', radius);
+      circle.setAttribute('fill', '#ddd');
+
+      circle.addEventListener('click', (e) => {
+        e.preventDefault();
+        circle.setAttribute('fill', '#deg');
+        this.pushEvent("circle-selected", {x, y, r: radius })
+      })
+
+      svg.appendChild(circle);
+
+      this.pushEvent("circle-drawn", {x: x, y: y, r: radius})
     });
 
     this.el.addEventListener("contextmenu", (e) => {
       e.preventDefault();
+
       let modal = document.getElementById("modal");
       let content = document.getElementById("modal-content");
       modal.style.display = "block";

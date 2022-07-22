@@ -11,16 +11,7 @@ defmodule GuiWeb.CircleDrawerLive do
     <h1 class="font-semibold">CircleDraw</h1>
 
     <div class="mx-auto">
-      <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100">
-        <%= for {{x, y}, r} <- @circles do %>
-          <circle cx={x} cy={y} r={r} fill="#ddd" phx-click="select-circle" phx-value-x={x} phx-value-y={y}></circle>
-        <% end %>
-
-        <%= case @selected_circle do %>
-          <%= {{x, y}, r} -> %>
-            <circle cx={x} cy={y} r={r} fill="#deg"></circle>
-          <%= _ -> %>
-        <% end %>
+      <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       </svg>
 
       <button class="mt-10" phx-click="reset" type="button">Reset</button>
@@ -75,6 +66,26 @@ defmodule GuiWeb.CircleDrawerLive do
       |> assign(:selected_circle, nil)
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("circle-drawn", %{"x" => x, "y" => y, "r" => r}, socket) do
+    circles = socket.assigns.circles
+    updated_circles = add_circle(circles, {x, y, r})
+
+    socket
+    |> assign(:circles, updated_circles)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("circle-selected", %{"x" => x, "y" => y, "r" => r}, socket) do
+    circles = socket.assigns.circles
+    circle = {{x, y}, r}
+
+    socket
+    |> assign(:selected_circle, circle)
+    |> noreply()
   end
 
   @impl true
