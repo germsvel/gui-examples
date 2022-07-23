@@ -126,14 +126,19 @@ defmodule GuiWeb.CircleDrawerLive do
     canvas = socket.assigns.canvas
     redo_history = socket.assigns.redo_history
 
-    {previous_canvas, undo_history} = CircleDrawer.History.pop_event(undo_history)
-    redo_history = CircleDrawer.History.add_event(redo_history, canvas)
+    case CircleDrawer.History.pop_event(undo_history) do
+      {previous_canvas, undo_history} ->
+        redo_history = CircleDrawer.History.add_event(redo_history, canvas)
 
-    socket
-    |> assign(:canvas, previous_canvas)
-    |> assign(:undo_history, undo_history)
-    |> assign(:redo_history, redo_history)
-    |> noreply()
+        socket
+        |> assign(:canvas, previous_canvas)
+        |> assign(:undo_history, undo_history)
+        |> assign(:redo_history, redo_history)
+        |> noreply()
+
+      :no_more_history ->
+        socket |> noreply()
+    end
   end
 
   @impl true
@@ -142,14 +147,19 @@ defmodule GuiWeb.CircleDrawerLive do
     canvas = socket.assigns.canvas
     redo_history = socket.assigns.redo_history
 
-    {previous_canvas, redo_history} = CircleDrawer.History.pop_event(redo_history)
-    undo_history = CircleDrawer.History.add_event(undo_history, canvas)
+    case CircleDrawer.History.pop_event(redo_history) do
+      {previous_canvas, redo_history} ->
+        undo_history = CircleDrawer.History.add_event(undo_history, canvas)
 
-    socket
-    |> assign(:canvas, previous_canvas)
-    |> assign(:undo_history, undo_history)
-    |> assign(:redo_history, redo_history)
-    |> noreply()
+        socket
+        |> assign(:canvas, previous_canvas)
+        |> assign(:undo_history, undo_history)
+        |> assign(:redo_history, redo_history)
+        |> noreply()
+
+      :no_more_history ->
+        socket |> noreply()
+    end
   end
 
   @impl true

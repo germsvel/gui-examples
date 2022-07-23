@@ -15,7 +15,7 @@ defmodule Gui.CircleDrawer do
     def build, do: []
     def add_event(history, event), do: [event | history]
 
-    def pop_event([]), do: []
+    def pop_event([]), do: :no_more_history
     def pop_event([event | rest]), do: {event, rest}
   end
 
