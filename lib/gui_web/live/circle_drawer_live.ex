@@ -11,6 +11,11 @@ defmodule GuiWeb.CircleDrawerLive do
     <h1 class="font-semibold">CircleDraw</h1>
 
     <div class="mx-auto">
+      <div>
+        <button class="text-white bg-gray-500 border border-gray-500 hover:bg-gray-900" phx-click="undo">Undo</button>
+        <button phx-click="redo">Redo</button>
+      </div>
+
       <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <%= for {{x, y}, r} <- @circles do %>
           <circle cx={x} cy={y} r={r} fill="#ddd" />
