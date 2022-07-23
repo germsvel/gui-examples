@@ -30,7 +30,6 @@ Hooks.Slider = {
 Hooks.CircleDrawer = {
   mounted() {
     let svg = this.el;
-    // let NS = svg.getAttribute('xmlns');
 
     this.el.addEventListener("click", (e) => {
       let pt = svg.createSVGPoint();
@@ -44,23 +43,6 @@ Hooks.CircleDrawer = {
       let x = svgP.x;
       let y = svgP.y;
 
-      // let circle = document.createElementNS(NS, 'circle');
-      // circle.setAttribute('cx', x);
-      // circle.setAttribute('cy', y);
-      // circle.setAttribute('r', r);
-      // circle.setAttribute('fill', '#ddd');
-      //
-      // circle.addEventListener('click', (e) => {
-      //   e.preventDefault();
-      //
-      //   circle.setAttribute('fill', '#deg');
-      //   this.pushEvent("circle-selected", {x, y, r})
-      // })
-      //
-      // svg.appendChild(circle);
-
-      // this.pushEvent("circle-drawn", {x, y, r})
-      //
       this.pushEvent("canvas-click", {x, y})
     });
 

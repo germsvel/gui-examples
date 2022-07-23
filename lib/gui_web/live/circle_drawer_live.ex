@@ -118,16 +118,6 @@ defmodule GuiWeb.CircleDrawerLive do
 
   defp existing_circle(circles, coordinates) do
     Enum.find(circles, &within_circle?(&1, coordinates))
-    # |> case do
-    #   {{x, y}, _} ->
-    #     {map_with_circle, other_circles} = Map.split(circles, [{x, y}])
-    #     circle = Enum.find(map_with_circle, fn {{^x, ^y}, r} = circle -> circle end)
-    #
-    #     {circle, other_circles}
-    #
-    #   _ ->
-    #     nil
-    # end
   end
 
   defp within_circle?({{circle_x, circle_y}, radius}, {x, y}) do
