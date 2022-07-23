@@ -61,7 +61,6 @@ Hooks.CircleDrawer = {
 Hooks.CircleDiameterSlider = {
   mounted() {
     this.el.addEventListener("input", (e) => {
-      console.log(e)
       let radius = e.target.value;
       let selected = document.getElementById("selected-circle");
 
@@ -69,8 +68,7 @@ Hooks.CircleDiameterSlider = {
     });
 
     this.el.addEventListener("update-selected-radius", (e) => {
-      let selected = document.getElementById("selected-circle");
-      let radius = selected.getAttribute('r');
+      let radius = e.target.value;
 
       this.pushEvent("selected-circle-radius-updated", {r: radius});
     });

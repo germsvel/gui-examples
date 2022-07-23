@@ -67,7 +67,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
   defp hide_modal do
     %JS{}
-    # |> JS.dispatch(["update-selected-radius"])
+    |> JS.dispatch("update-selected-radius", to: "#diameter-slider")
     |> JS.hide(transition: "fade-out", to: "#modal")
     |> JS.hide(transition: "fade-out-scale", to: "#modal-content")
   end
@@ -108,11 +108,16 @@ defmodule GuiWeb.CircleDrawerLive do
   def handle_event("selected-circle-radius-updated", %{"r" => r}, socket) do
     circles = socket.assigns.circles
     {{x, y}, _} = socket.assigns.selected_circle
+    r = to_number(r)
 
     case existing_circle(circles, {x, y}) do
       {{cx, cy}, _r} = circle ->
+        updated_circle = {{cx, cy}, r}
+        updated_circles = add_circle(circles, updated_circle)
+
         socket
-        |> assign(:selected_circle, {{cx, cy}, r})
+        |> assign(:selected_circle, updated_circle)
+        |> assign(:circles, updated_circles)
         |> noreply()
 
       _ ->
