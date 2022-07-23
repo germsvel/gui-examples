@@ -3,7 +3,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
   alias Phoenix.LiveView.JS
 
-  @beginning_radius 1
+  @beginning_radius 2
 
   @impl true
   def render(assigns) do
@@ -12,6 +12,15 @@ defmodule GuiWeb.CircleDrawerLive do
 
     <div class="mx-auto">
       <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <%= for {{x, y}, r} <- @circles do %>
+          <circle cx={x} cy={y} r={r} fill="#ddd" />
+        <% end %>
+
+        <%= case @selected_circle do %>
+          <% {{x, y}, r} -> %>
+            <circle cx={x} cy={y} r={r} fill="#deg"/>
+          <% _ -> %>
+        <% end %>
       </svg>
 
       <button class="mt-10" phx-click="reset" type="button">Reset</button>
@@ -69,54 +78,24 @@ defmodule GuiWeb.CircleDrawerLive do
   end
 
   @impl true
-  def handle_event("circle-drawn", %{"x" => x, "y" => y, "r" => r}, socket) do
-    circles = socket.assigns.circles
-    updated_circles = add_circle(circles, {x, y, r})
-
-    socket
-    |> assign(:circles, updated_circles)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("circle-selected", %{"x" => x, "y" => y, "r" => r}, socket) do
-    circles = socket.assigns.circles
-    circle = {{x, y}, r}
-
-    socket
-    |> assign(:selected_circle, circle)
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
     circles = socket.assigns.circles
+    x = to_number(x)
+    y = to_number(y)
+    r = @beginning_radius
 
     case existing_circle(circles, {x, y}) do
-      nil ->
-        updated_circles = add_circle(circles, {x, y, @beginning_radius})
-
-        {:noreply, assign(socket, :circles, updated_circles)}
+      {{_x, _y}, _r} = circle ->
+        socket
+        |> assign(:selected_circle, circle)
+        |> noreply()
 
       _ ->
-        {:noreply, socket}
-    end
-  end
+        updated_circles = add_circle(circles, {{x, y}, r})
 
-  @impl true
-  def handle_event("select-circle", %{"x" => x, "y" => y}, socket) do
-    circles = socket.assigns.circles
-    {x, _} = Float.parse(x)
-    {y, _} = Float.parse(y)
-
-    case existing_circle(circles, {x, y}) do
-      {{_original_x, _original_y}, _radius} = circle ->
-        {:noreply, assign(socket, :selected_circle, circle)}
-
-      nil ->
-        updated_circles = add_circle(circles, {x, y, @beginning_radius})
-
-        {:noreply, assign(socket, :circles, updated_circles)}
+        socket
+        |> assign(:circles, updated_circles)
+        |> noreply()
     end
   end
 
@@ -128,16 +107,27 @@ defmodule GuiWeb.CircleDrawerLive do
     |> noreply()
   end
 
+  defp to_number(number) when is_binary(number), do: Float.parse(number) |> elem(0)
+  defp to_number(number), do: number
+
   defp noreply(socket), do: {:noreply, socket}
 
-  defp add_circle(circles, {x, y, radius}) do
+  defp add_circle(circles, {{x, y}, radius}) do
     Map.put(circles, {x, y}, radius)
   end
 
   defp existing_circle(circles, coordinates) do
-    Enum.find(circles, fn circle ->
-      within_circle?(circle, coordinates)
-    end)
+    Enum.find(circles, &within_circle?(&1, coordinates))
+    # |> case do
+    #   {{x, y}, _} ->
+    #     {map_with_circle, other_circles} = Map.split(circles, [{x, y}])
+    #     circle = Enum.find(map_with_circle, fn {{^x, ^y}, r} = circle -> circle end)
+    #
+    #     {circle, other_circles}
+    #
+    #   _ ->
+    #     nil
+    # end
   end
 
   defp within_circle?({{circle_x, circle_y}, radius}, {x, y}) do

@@ -30,7 +30,7 @@ Hooks.Slider = {
 Hooks.CircleDrawer = {
   mounted() {
     let svg = this.el;
-    let NS = svg.getAttribute('xmlns');
+    // let NS = svg.getAttribute('xmlns');
 
     this.el.addEventListener("click", (e) => {
       let pt = svg.createSVGPoint();
@@ -43,24 +43,25 @@ Hooks.CircleDrawer = {
       let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
       let x = svgP.x;
       let y = svgP.y;
-      let r = 2;
 
-      let circle = document.createElementNS(NS, 'circle');
-      circle.setAttribute('cx', x);
-      circle.setAttribute('cy', y);
-      circle.setAttribute('r', r);
-      circle.setAttribute('fill', '#ddd');
+      // let circle = document.createElementNS(NS, 'circle');
+      // circle.setAttribute('cx', x);
+      // circle.setAttribute('cy', y);
+      // circle.setAttribute('r', r);
+      // circle.setAttribute('fill', '#ddd');
+      //
+      // circle.addEventListener('click', (e) => {
+      //   e.preventDefault();
+      //
+      //   circle.setAttribute('fill', '#deg');
+      //   this.pushEvent("circle-selected", {x, y, r})
+      // })
+      //
+      // svg.appendChild(circle);
 
-      circle.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        circle.setAttribute('fill', '#deg');
-        this.pushEvent("circle-selected", {x, y, r})
-      })
-
-      svg.appendChild(circle);
-
-      this.pushEvent("circle-drawn", {x, y, r})
+      // this.pushEvent("circle-drawn", {x, y, r})
+      //
+      this.pushEvent("canvas-click", {x, y})
     });
 
     this.el.addEventListener("contextmenu", (e) => {
