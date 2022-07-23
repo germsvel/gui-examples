@@ -43,23 +43,24 @@ Hooks.CircleDrawer = {
       let svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
       let x = svgP.x;
       let y = svgP.y;
-      let radius = 2;
+      let r = 2;
 
       let circle = document.createElementNS(NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', radius);
+      circle.setAttribute('r', r);
       circle.setAttribute('fill', '#ddd');
 
       circle.addEventListener('click', (e) => {
         e.preventDefault();
+
         circle.setAttribute('fill', '#deg');
-        this.pushEvent("circle-selected", {x, y, r: radius })
+        this.pushEvent("circle-selected", {x, y, r})
       })
 
       svg.appendChild(circle);
 
-      this.pushEvent("circle-drawn", {x: x, y: y, r: radius})
+      this.pushEvent("circle-drawn", {x, y, r})
     });
 
     this.el.addEventListener("contextmenu", (e) => {
