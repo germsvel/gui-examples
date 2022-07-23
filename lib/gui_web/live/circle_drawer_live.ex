@@ -1,9 +1,8 @@
 defmodule GuiWeb.CircleDrawerLive do
   use GuiWeb, :live_view
 
+  alias Gui.CircleDrawer
   alias Phoenix.LiveView.JS
-
-  @beginning_radius 2
 
   @impl true
   def render(assigns) do
@@ -17,14 +16,12 @@ defmodule GuiWeb.CircleDrawerLive do
       </div>
 
       <svg id="circle-drawer" phx-hook="CircleDrawer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <%= for {{x, y}, r} <- @circles do %>
+        <%= for %{x: x, y: y, r: r} <- @canvas.circles do %>
           <circle cx={x} cy={y} r={r} fill="#ddd" />
         <% end %>
 
-        <%= case @selected_circle do %>
-          <% {{x, y}, r} -> %>
-            <circle id="selected-circle" cx={x} cy={y} r={r} fill="#deg"/>
-          <% _ -> %>
+        <%= if selected = @canvas.selected do %>
+          <circle id="selected-circle" cx={selected.x} cy={selected.y} r={selected.r} fill="#deg"/>
         <% end %>
       </svg>
 
@@ -42,26 +39,18 @@ defmodule GuiWeb.CircleDrawerLive do
         <button class="phx-modal-close bg-white border-none hover:bg-gray-100 hover:border-gray-100" phx-click={hide_modal()}>✖</button>
 
         <div class="mt-3 text-center sm:mt-5">
-          <%= case @selected_circle do %>
-            <% {{x, y}, r} -> %>
-              <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
-                Adjust diameter of circle at (<%= Float.floor(x) %>, <%= Float.floor(y) %>)
-              </h3>
-              <div class="mt-2">
-                <input phx-hook="CircleDiameterSlider" type="range" value={r} id="diameter-slider" name="diameter-slider" min="0" max="10" step="1">
-              </div>
-            <% _ -> %>
+          <%= if selected = @canvas.selected do %>
+            <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
+              Adjust diameter of circle at (<%= Float.floor(selected.x) %>, <%= Float.floor(selected.y) %>)
+            </h3>
+            <div class="mt-2">
+              <input phx-hook="CircleDiameterSlider" type="range" value={selected.r} id="diameter-slider" name="diameter-slider" min="0" max="10" step="1">
+            </div>
           <% end %>
         </div>
       </div>
     </div>
     """
-  end
-
-  defp hide_menu_and_show_modal() do
-    %JS{}
-    |> JS.hide(transition: "fade-out", to: "#menu")
-    |> show_modal()
   end
 
   defp show_modal(js \\ %JS{}) do
@@ -79,80 +68,58 @@ defmodule GuiWeb.CircleDrawerLive do
 
   @impl true
   def mount(_, _, socket) do
-    socket =
-      socket
-      |> assign(:circles, %{})
-      |> assign(:selected_circle, nil)
-
-    {:ok, socket}
+    socket
+    |> assign(:canvas, CircleDrawer.new_canvas())
+    |> ok()
   end
 
   @impl true
   def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
-    circles = socket.assigns.circles
+    canvas = socket.assigns.canvas
     x = to_number(x)
     y = to_number(y)
-    r = @beginning_radius
 
-    case existing_circle(circles, {x, y}) do
-      {{_x, _y}, _r} = circle ->
+    case CircleDrawer.existing_circle(canvas, {x, y}) do
+      %{x: _x, y: _y} = circle ->
+        updated_canvas = CircleDrawer.select_circle(canvas, circle)
+
         socket
-        |> assign(:selected_circle, circle)
+        |> assign(:canvas, updated_canvas)
         |> noreply()
 
       _ ->
-        updated_circles = add_circle(circles, {{x, y}, r})
+        circle = CircleDrawer.new_circle(x, y)
+        updated_canvas = CircleDrawer.add_circle(canvas, circle)
 
         socket
-        |> assign(:circles, updated_circles)
+        |> assign(:canvas, updated_canvas)
         |> noreply()
     end
   end
 
   @impl true
   def handle_event("selected-circle-radius-updated", %{"r" => r}, socket) do
-    circles = socket.assigns.circles
-    {{x, y}, _} = socket.assigns.selected_circle
+    canvas = socket.assigns.canvas
     r = to_number(r)
 
-    case existing_circle(circles, {x, y}) do
-      {{cx, cy}, _r} = circle ->
-        updated_circle = {{cx, cy}, r}
-        updated_circles = add_circle(circles, updated_circle)
+    updated_circle = CircleDrawer.update_radius(canvas.selected, r)
+    updated_canvas = CircleDrawer.update_selected(canvas, updated_circle)
 
-        socket
-        |> assign(:selected_circle, updated_circle)
-        |> assign(:circles, updated_circles)
-        |> noreply()
-
-      _ ->
-        socket
-        |> noreply()
-    end
+    socket
+    |> assign(:canvas, updated_canvas)
+    |> noreply()
   end
 
   @impl true
   def handle_event("reset", _, socket) do
     socket
-    |> assign(:circles, %{})
-    |> assign(:selected_circle, nil)
+    |> assign(:canvas, CircleDrawer.new_canvas())
     |> noreply()
   end
 
   defp to_number(number) when is_binary(number), do: Float.parse(number) |> elem(0)
   defp to_number(number), do: number
 
+  defp ok(socket), do: {:ok, socket}
   defp noreply(socket), do: {:noreply, socket}
-
-  defp add_circle(circles, {{x, y}, radius}) do
-    Map.put(circles, {x, y}, radius)
-  end
-
-  defp existing_circle(circles, coordinates) do
-    Enum.find(circles, &within_circle?(&1, coordinates))
-  end
-
-  defp within_circle?({{circle_x, circle_y}, radius}, {x, y}) do
-    :math.pow(x - circle_x, 2) + :math.pow(y - circle_y, 2) <= :math.pow(radius, 2)
-  end
 end
