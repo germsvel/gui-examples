@@ -11,6 +11,14 @@ defmodule Gui.CircleDrawer do
     @type t :: %__MODULE__{circles: [Circle.t()], selected: Circle.t()}
   end
 
+  defmodule History do
+    def build, do: []
+    def add_event(history, event), do: [event | history]
+
+    def pop_event([]), do: []
+    def pop_event([event | rest]), do: {event, rest}
+  end
+
   def new_canvas, do: %Canvas{}
 
   def new_circle(x, y), do: %Circle{x: x, y: y}

@@ -70,43 +70,85 @@ defmodule GuiWeb.CircleDrawerLive do
   def mount(_, _, socket) do
     socket
     |> assign(:canvas, CircleDrawer.new_canvas())
+    |> assign(:undo_history, CircleDrawer.History.build())
+    |> assign(:redo_history, CircleDrawer.History.build())
     |> ok()
   end
 
   @impl true
   def handle_event("canvas-click", %{"x" => x, "y" => y}, socket) do
+    undo_history = socket.assigns.undo_history
     canvas = socket.assigns.canvas
     x = to_number(x)
     y = to_number(y)
 
     case CircleDrawer.existing_circle(canvas, {x, y}) do
       %{x: _x, y: _y} = circle ->
+        undo_history = CircleDrawer.History.add_event(undo_history, canvas)
         updated_canvas = CircleDrawer.select_circle(canvas, circle)
 
         socket
         |> assign(:canvas, updated_canvas)
+        |> assign(:undo_history, undo_history)
         |> noreply()
 
       _ ->
         circle = CircleDrawer.new_circle(x, y)
+        undo_history = CircleDrawer.History.add_event(undo_history, canvas)
         updated_canvas = CircleDrawer.add_circle(canvas, circle)
 
         socket
         |> assign(:canvas, updated_canvas)
+        |> assign(:undo_history, undo_history)
         |> noreply()
     end
   end
 
   @impl true
   def handle_event("selected-circle-radius-updated", %{"r" => r}, socket) do
+    undo_history = socket.assigns.undo_history
     canvas = socket.assigns.canvas
     r = to_number(r)
 
+    undo_history = CircleDrawer.History.add_event(undo_history, canvas)
     updated_circle = CircleDrawer.update_radius(canvas.selected, r)
     updated_canvas = CircleDrawer.update_selected(canvas, updated_circle)
 
     socket
     |> assign(:canvas, updated_canvas)
+    |> assign(:undo_history, undo_history)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("undo", _, socket) do
+    undo_history = socket.assigns.undo_history
+    canvas = socket.assigns.canvas
+    redo_history = socket.assigns.redo_history
+
+    {previous_canvas, undo_history} = CircleDrawer.History.pop_event(undo_history)
+    redo_history = CircleDrawer.History.add_event(redo_history, canvas)
+
+    socket
+    |> assign(:canvas, previous_canvas)
+    |> assign(:undo_history, undo_history)
+    |> assign(:redo_history, redo_history)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("redo", _, socket) do
+    undo_history = socket.assigns.undo_history
+    canvas = socket.assigns.canvas
+    redo_history = socket.assigns.redo_history
+
+    {previous_canvas, redo_history} = CircleDrawer.History.pop_event(redo_history)
+    undo_history = CircleDrawer.History.add_event(undo_history, canvas)
+
+    socket
+    |> assign(:canvas, previous_canvas)
+    |> assign(:undo_history, undo_history)
+    |> assign(:redo_history, redo_history)
     |> noreply()
   end
 
@@ -114,6 +156,8 @@ defmodule GuiWeb.CircleDrawerLive do
   def handle_event("reset", _, socket) do
     socket
     |> assign(:canvas, CircleDrawer.new_canvas())
+    |> assign(:undo_history, CircleDrawer.History.build())
+    |> assign(:redo_history, CircleDrawer.History.build())
     |> noreply()
   end
 
