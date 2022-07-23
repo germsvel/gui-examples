@@ -58,6 +58,25 @@ Hooks.CircleDrawer = {
   }
 }
 
+Hooks.CircleDiameterSlider = {
+  mounted() {
+    this.el.addEventListener("input", (e) => {
+      console.log(e)
+      let radius = e.target.value;
+      let selected = document.getElementById("selected-circle");
+
+      selected.setAttribute('r', radius)
+    });
+
+    this.el.addEventListener("update-selected-radius", (e) => {
+      let selected = document.getElementById("selected-circle");
+      let radius = selected.getAttribute('r');
+
+      this.pushEvent("selected-circle-radius-updated", {r: radius});
+    });
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: {_csrf_token: csrfToken} })
 

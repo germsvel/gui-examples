@@ -18,7 +18,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
         <%= case @selected_circle do %>
           <% {{x, y}, r} -> %>
-            <circle cx={x} cy={y} r={r} fill="#deg"/>
+            <circle id="selected-circle" cx={x} cy={y} r={r} fill="#deg"/>
           <% _ -> %>
         <% end %>
       </svg>
@@ -37,12 +37,16 @@ defmodule GuiWeb.CircleDrawerLive do
         <button class="phx-modal-close bg-white border-none hover:bg-gray-100 hover:border-gray-100" phx-click={hide_modal()}>✖</button>
 
         <div class="mt-3 text-center sm:mt-5">
-          <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
-            Adjust diameter of circle at (x, y)
-          </h3>
-          <div class="mt-2">
-            <input type="range" id="diameter-slider" name="diameter-slider" min="0" max="100" step="1">
-          </div>
+          <%= case @selected_circle do %>
+            <% {{x, y}, r} -> %>
+              <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
+                Adjust diameter of circle at (<%= Float.floor(x) %>, <%= Float.floor(y) %>)
+              </h3>
+              <div class="mt-2">
+                <input phx-hook="CircleDiameterSlider" type="range" value={r} id="diameter-slider" name="diameter-slider" min="0" max="10" step="1">
+              </div>
+            <% _ -> %>
+          <% end %>
         </div>
       </div>
     </div>
@@ -63,6 +67,7 @@ defmodule GuiWeb.CircleDrawerLive do
 
   defp hide_modal do
     %JS{}
+    # |> JS.dispatch(["update-selected-radius"])
     |> JS.hide(transition: "fade-out", to: "#modal")
     |> JS.hide(transition: "fade-out-scale", to: "#modal-content")
   end
@@ -95,6 +100,23 @@ defmodule GuiWeb.CircleDrawerLive do
 
         socket
         |> assign(:circles, updated_circles)
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event("selected-circle-radius-updated", %{"r" => r}, socket) do
+    circles = socket.assigns.circles
+    {{x, y}, _} = socket.assigns.selected_circle
+
+    case existing_circle(circles, {x, y}) do
+      {{cx, cy}, _r} = circle ->
+        socket
+        |> assign(:selected_circle, {{cx, cy}, r})
+        |> noreply()
+
+      _ ->
+        socket
         |> noreply()
     end
   end
