@@ -35,6 +35,26 @@ defmodule GuiWeb.CircleDrawerLiveTest do
     assert has_element?(view, selected_circle(2, 4))
   end
 
+  test "clicking undo goes back one step", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/circle_drawer")
+
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_hook(view, "canvas-click", %{x: 5, y: 6})
+    render_click(element(view, "#undo"))
+
+    refute has_element?(view, circle(5, 6))
+  end
+
+  test "clicking redo goes forward one step", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/circle_drawer")
+
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_click(element(view, "#undo"))
+    render_click(element(view, "#redo"))
+
+    assert has_element?(view, circle(2, 4))
+  end
+
   defp circle(x, y) do
     "circle[cx=#{x}][cy=#{y}]"
   end
