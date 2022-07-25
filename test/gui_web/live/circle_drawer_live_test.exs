@@ -14,7 +14,7 @@ defmodule GuiWeb.CircleDrawerLiveTest do
 
     render_hook(view, "canvas-click", %{x: 2, y: 4})
 
-    assert_reply view, %{action: "draw-circle", x: 2, y: 4, radius: 10}
+    assert has_element?(view, circle(2, 4))
   end
 
   test "clicking on the same circle (exactly), fills the original circle", %{conn: conn} do
@@ -23,7 +23,7 @@ defmodule GuiWeb.CircleDrawerLiveTest do
     render_hook(view, "canvas-click", %{x: 2, y: 4})
     render_hook(view, "canvas-click", %{x: 2, y: 4})
 
-    assert_reply view, %{action: "fill-circle", x: 2, y: 4, radius: 10}
+    assert has_element?(view, selected_circle(2, 4))
   end
 
   test "clicking within an existing circle, fills the original circle", %{conn: conn} do
@@ -32,6 +32,14 @@ defmodule GuiWeb.CircleDrawerLiveTest do
     render_hook(view, "canvas-click", %{x: 2, y: 4})
     render_hook(view, "canvas-click", %{x: 3, y: 5})
 
-    assert_reply view, %{action: "fill-circle", x: 2, y: 4, radius: 10}
+    assert has_element?(view, selected_circle(2, 4))
+  end
+
+  defp circle(x, y) do
+    "circle[cx=#{x}][cy=#{y}]"
+  end
+
+  defp selected_circle(x, y) do
+    "circle[cx=#{x}][cy=#{y}][fill='#deg']"
   end
 end

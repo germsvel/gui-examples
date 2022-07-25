@@ -41,7 +41,7 @@ defmodule GuiWeb.CircleDrawerLive do
         <div class="mt-3 text-center sm:mt-5">
           <%= if selected = @canvas.selected do %>
             <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
-              Adjust diameter of circle at (<%= Float.floor(selected.x) %>, <%= Float.floor(selected.y) %>)
+              Adjust diameter of circle at (<%= pretty_number(selected.x) %>, <%= pretty_number(selected.y) %>)
             </h3>
             <div class="mt-2">
               <input phx-hook="CircleDiameterSlider" type="range" value={selected.r} id="diameter-slider" name="diameter-slider" min="0" max="10" step="1">
@@ -53,11 +53,8 @@ defmodule GuiWeb.CircleDrawerLive do
     """
   end
 
-  defp show_modal(js \\ %JS{}) do
-    js
-    |> JS.show(transition: "fade-in", to: "#modal")
-    |> JS.show(transition: "fade-in-scale", to: "#modal-content")
-  end
+  defp pretty_number(float) when is_float(float), do: Float.floor(float)
+  defp pretty_number(int) when is_integer(int), do: int
 
   defp hide_modal do
     %JS{}
