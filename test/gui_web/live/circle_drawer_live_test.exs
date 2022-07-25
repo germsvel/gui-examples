@@ -35,6 +35,16 @@ defmodule GuiWeb.CircleDrawerLiveTest do
     assert has_element?(view, selected_circle(2, 4))
   end
 
+  test "user can change the radius of a selected circle", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/circle_drawer")
+
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_hook(view, "canvas-click", %{x: 2, y: 4})
+    render_hook(view, "selected-circle-radius-updated", %{r: 10})
+
+    assert has_element?(view, selected_circle(2, 4, 10))
+  end
+
   test "clicking undo goes back one step", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/circle_drawer")
 
@@ -61,5 +71,9 @@ defmodule GuiWeb.CircleDrawerLiveTest do
 
   defp selected_circle(x, y) do
     "circle[cx=#{x}][cy=#{y}][fill='#deg']"
+  end
+
+  defp selected_circle(x, y, r) do
+    "circle[cx=#{x}][cy=#{y}][r=#{r}][fill='#deg']"
   end
 end
