@@ -5,18 +5,19 @@ defmodule GuiWeb.CellsLive do
     ~H"""
     <h1 class="font-semibold">Cells</h1>
 
-    <table>
-      <tbody>
+    <table class="border border-slate-500 border-collapse">
+      <thead>
         <tr>
           <td></td>
           <%= for col_title <- @col_titles do %>
-            <th scope="col"><%= col_title %></th>
+            <th class="border border-slate-500" scope="col"><%= col_title %></th>
           <% end %>
         </tr>
-
+      </thead>
+      <tbody>
         <%= for row_title <- @row_titles do %>
           <tr>
-            <th scope="row"><%= row_title %></th>
+            <th class="border border-slate-500" scope="row"><%= row_title %></th>
           </tr>
         <% end %>
       </tbody>
