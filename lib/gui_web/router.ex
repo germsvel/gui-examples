@@ -24,6 +24,7 @@ defmodule GuiWeb.Router do
     live "/timer", TimerLive
     live "/crud", CRUDLive
     live "/circle_drawer", CircleDrawerLive
+    live "/cells", CellsLive
   end
 
   # Other scopes may use custom stacks.
