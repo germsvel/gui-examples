@@ -20,6 +20,22 @@ defmodule GuiWeb.CellsLiveTest do
     assert has_element?(view, row_title(), "99")
   end
 
+  test "a user can input text in a cell", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/cells")
+
+    view
+    |> element(cell("A0"))
+    |> render_click()
+
+    view
+    |> form(cell("A0"), %{text: "Hello"})
+    |> render_submit()
+
+    assert has_element?(view, cell("A0"), "Hello")
+  end
+
+  defp cell(text), do: "##{text}"
+
   defp col_title, do: "th[scope=col]"
   defp row_title, do: "th[scope=row]"
 end

@@ -9,15 +9,18 @@ defmodule GuiWeb.CellsLive do
       <thead>
         <tr>
           <td></td>
-          <%= for col_title <- @col_titles do %>
-            <th class="border border-slate-500" scope="col"><%= col_title %></th>
+          <%= for col <- @cols do %>
+            <th class="border border-slate-500" scope="col"><%= col %></th>
           <% end %>
         </tr>
       </thead>
       <tbody>
-        <%= for row_title <- @row_titles do %>
+        <%= for row <- @rows do %>
           <tr>
-            <th class="border border-slate-500" scope="row"><%= row_title %></th>
+            <th class="border border-slate-500" scope="row"><%= row %></th>
+            <%= for cell <- row_cells(@cells, row) do %>
+              <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"></td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>
@@ -25,15 +28,37 @@ defmodule GuiWeb.CellsLive do
     """
   end
 
-  @col_titles ~w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-  @row_titles for i <- 0..99, do: to_string(i)
+  defp row_cells(cells, row), do: Enum.filter(cells, fn %{row: cell_row} -> cell_row == row end)
+
+  # @cols ~w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+  @cols ~w(A B C D E F)
+  # @rows for i <- 0..99, do: to_string(i)
+  @rows for i <- 0..9, do: to_string(i)
+
+  defmodule Cell do
+    defstruct [:id, :col, :row]
+
+    def build(col, row), do: %__MODULE__{id: col <> row, col: col, row: row}
+  end
 
   def mount(_, _, socket) do
+    cells =
+      for row <- @rows, col <- @cols do
+        Cell.build(col, row)
+      end
+
     socket
-    |> assign(:col_titles, @col_titles)
-    |> assign(:row_titles, @row_titles)
+    |> assign(:cols, @cols)
+    |> assign(:rows, @rows)
+    |> assign(:cells, cells)
     |> ok()
   end
 
+  def handle_event("edit-cell", %{"cell" => cell}, socket) do
+    socket
+    |> noreply()
+  end
+
   defp ok(socket), do: {:ok, socket}
+  defp noreply(socket), do: {:noreply, socket}
 end
