@@ -26,7 +26,7 @@ defmodule GuiWeb.CellsLive do
                   </.form>
                 </td>
               <% else %>
-                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"><%= cell.value %></td>
+                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"><%= to_string(cell) %></td>
               <% end %>
             <% end %>
           </tr>
@@ -47,6 +47,15 @@ defmodule GuiWeb.CellsLive do
     defstruct [:id, :col, :row, :value]
 
     def build(col, row), do: %__MODULE__{id: col <> row, col: col, row: row}
+
+    defimpl String.Chars, for: Cell do
+      def to_string(%{value: value}) do
+        case value do
+          "=" <> rest -> Operations.parse(rest)
+          raw_value -> raw_value
+        end
+      end
+    end
   end
 
   def mount(_, _, socket) do
