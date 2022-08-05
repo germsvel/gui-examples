@@ -21,7 +21,7 @@ defmodule GuiWeb.CellsLive do
             <%= for cell <- row_cells(@cells, row) do %>
               <%= if @edit_cell == cell.id do %>
                 <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500">
-                  <.form let={f} for={:cell} phx-submit="save-cell" %>
+                  <.form let={f} for={:cell} phx-click-away="cancel-edit" phx-submit="save-cell" %>
                     <%= text_input f, :value, value: cell.value %>
                   </.form>
                 </td>
@@ -66,6 +66,12 @@ defmodule GuiWeb.CellsLive do
   def handle_event("edit-cell", %{"cell" => cell}, socket) do
     socket
     |> assign(:edit_cell, cell)
+    |> noreply()
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    socket
+    |> assign(:edit_cell, nil)
     |> noreply()
   end
 
