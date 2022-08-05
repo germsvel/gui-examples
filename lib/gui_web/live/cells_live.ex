@@ -19,7 +19,15 @@ defmodule GuiWeb.CellsLive do
           <tr>
             <th class="border border-slate-500" scope="row"><%= row %></th>
             <%= for cell <- row_cells(@cells, row) do %>
-              <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"></td>
+              <%= if @edit_cell == cell.id do %>
+                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500">
+                  <.form let={f} for={:cell} phx-submit="save-cell" %>
+                    <%= text_input f, :value, value: cell.value %>
+                  </.form>
+                </td>
+              <% else %>
+                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"><%= cell.value %></td>
+              <% end %>
             <% end %>
           </tr>
         <% end %>
@@ -36,7 +44,7 @@ defmodule GuiWeb.CellsLive do
   @rows for i <- 0..9, do: to_string(i)
 
   defmodule Cell do
-    defstruct [:id, :col, :row]
+    defstruct [:id, :col, :row, :value]
 
     def build(col, row), do: %__MODULE__{id: col <> row, col: col, row: row}
   end
@@ -51,11 +59,29 @@ defmodule GuiWeb.CellsLive do
     |> assign(:cols, @cols)
     |> assign(:rows, @rows)
     |> assign(:cells, cells)
+    |> assign(:edit_cell, nil)
     |> ok()
   end
 
   def handle_event("edit-cell", %{"cell" => cell}, socket) do
     socket
+    |> assign(:edit_cell, cell)
+    |> noreply()
+  end
+
+  def handle_event("save-cell", %{"cell" => %{"value" => value}}, socket) do
+    cells =
+      Enum.map(socket.assigns.cells, fn cell ->
+        if cell.id == socket.assigns.edit_cell do
+          %Cell{cell | value: value}
+        else
+          cell
+        end
+      end)
+
+    socket
+    |> assign(:cells, cells)
+    |> assign(:edit_cell, nil)
     |> noreply()
   end
 

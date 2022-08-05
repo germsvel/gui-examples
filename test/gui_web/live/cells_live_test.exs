@@ -28,13 +28,14 @@ defmodule GuiWeb.CellsLiveTest do
     |> render_click()
 
     view
-    |> form(cell("A0"), %{text: "Hello"})
+    |> form(edit_cell("A0"), %{cell: %{value: "Hello"}})
     |> render_submit()
 
     assert has_element?(view, cell("A0"), "Hello")
   end
 
-  defp cell(text), do: "##{text}"
+  defp edit_cell(id), do: "##{id} form"
+  defp cell(id), do: "##{id}"
 
   defp col_title, do: "th[scope=col]"
   defp row_title, do: "th[scope=row]"
