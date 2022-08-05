@@ -20,21 +20,36 @@ defmodule GuiWeb.CellsLiveTest do
     assert has_element?(view, row_title(), "99")
   end
 
-  test "a user can input text in a cell", %{conn: conn} do
+  test "user can input text in a cell", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/cells")
 
     view
-    |> element(cell("A0"))
-    |> render_click()
-
-    view
-    |> form(edit_cell("A0"), %{cell: %{value: "Hello"}})
+    |> edit_cell("A0", "Hello")
     |> render_submit()
 
     assert has_element?(view, cell("A0"), "Hello")
   end
 
-  defp edit_cell(id), do: "##{id} form"
+  test "user can input addition formula", %{conn: conn} do
+    {:ok, view, _html} = live(conn, "/cells")
+
+    view
+    |> edit_cell("A0", "=5+5")
+    |> render_submit()
+
+    assert has_element?(view, cell("A0"), "10")
+  end
+
+  defp edit_cell(view, cell_id, value) do
+    view
+    |> element(cell(cell_id))
+    |> render_click()
+
+    view
+    |> form(editable_cell(cell_id), %{cell: %{value: value}})
+  end
+
+  defp editable_cell(id), do: "##{id} form"
   defp cell(id), do: "##{id}"
 
   defp col_title, do: "th[scope=col]"
