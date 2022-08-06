@@ -39,6 +39,7 @@ defmodule Gui.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_view, "~> 0.17.0"},
       {:floki, ">= 0.27.0", only: :test},
+      {:nimble_parsec, "~> 1.2"},
       {:phoenix_html, "~> 3.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_dashboard, "~> 0.4"},

@@ -51,7 +51,7 @@ defmodule GuiWeb.CellsLive do
     defimpl String.Chars, for: Cell do
       def to_string(%{value: value}) do
         case value do
-          "=" <> rest -> Operations.parse(rest)
+          "=" <> rest -> "function #{rest}"
           raw_value -> raw_value
         end
       end
