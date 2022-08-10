@@ -9,7 +9,7 @@ defmodule Gui.CellTest do
         Cell.build("A", "0")
         |> Cell.put_value("hello world")
 
-      assert cell.value == %Cell.Text{value: "hello world"}
+      assert cell.value == [text: "hello world"]
     end
   end
 end
