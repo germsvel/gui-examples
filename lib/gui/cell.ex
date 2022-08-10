@@ -17,8 +17,10 @@ defmodule Gui.Cell do
   defimpl String.Chars, for: Gui.Cell do
     def to_string(%{value: value}) do
       case value do
-        "=" <> rest -> "function #{rest}"
-        raw_value -> raw_value
+        [text: text] -> text
+        [number: number] -> "#{number}"
+        [function: func] -> "Function = #{inspect(func)}"
+        nil -> ""
       end
     end
   end
