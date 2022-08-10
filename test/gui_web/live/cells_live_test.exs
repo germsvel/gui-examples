@@ -25,19 +25,19 @@ defmodule GuiWeb.CellsLiveTest do
 
     view
     |> edit_cell("A0", "Hello")
-    |> render_submit()
 
     assert has_element?(view, cell("A0"), "Hello")
   end
 
-  test "user can input addition formula", %{conn: conn} do
+  test "user can input formulas", %{conn: conn} do
     {:ok, view, _html} = live(conn, "/cells")
 
     view
-    |> edit_cell("A0", "=5+5")
-    |> render_submit()
+    |> edit_cell("A0", "10")
+    |> edit_cell("A1", "20")
+    |> edit_cell("A2", "=sum(A0:A1)")
 
-    assert has_element?(view, cell("A0"), "10")
+    assert has_element?(view, cell("A2"), "30")
   end
 
   defp edit_cell(view, cell_id, value) do
@@ -47,6 +47,9 @@ defmodule GuiWeb.CellsLiveTest do
 
     view
     |> form(editable_cell(cell_id), %{cell: %{value: value}})
+    |> render_submit()
+
+    view
   end
 
   defp editable_cell(id), do: "##{id} form"

@@ -75,7 +75,7 @@ defmodule GuiWeb.CellsLive do
     cells =
       Enum.map(socket.assigns.cells, fn cell ->
         if cell.id == socket.assigns.edit_cell do
-          %Cell{cell | value: value}
+          Cell.put_value(cell, value)
         else
           cell
         end

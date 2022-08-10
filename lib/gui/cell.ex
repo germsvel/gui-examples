@@ -3,7 +3,7 @@ defmodule Gui.Cell do
 
   def build(col, row), do: %__MODULE__{id: col <> row, col: col, row: row}
 
-  defimpl String.Chars, for: Cell do
+  defimpl String.Chars, for: Gui.Cell do
     def to_string(%{value: value}) do
       case value do
         "=" <> rest -> "function #{rest}"
