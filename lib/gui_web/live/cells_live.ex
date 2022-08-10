@@ -1,7 +1,7 @@
 defmodule GuiWeb.CellsLive do
   use GuiWeb, :live_view
 
-  alias Gui.Cell
+  alias Gui.{Cells, Cell}
 
   def render(assigns) do
     ~H"""
@@ -40,21 +40,13 @@ defmodule GuiWeb.CellsLive do
 
   defp row_cells(cells, row), do: Enum.filter(cells, fn %{row: cell_row} -> cell_row == row end)
 
-  # @cols ~w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-  @cols ~w(A B C D E F)
-  # @rows for i <- 0..99, do: to_string(i)
-  @rows for i <- 0..9, do: to_string(i)
-
   def mount(_, _, socket) do
-    cells =
-      for row <- @rows, col <- @cols do
-        Cell.build(col, row)
-      end
+    sheet = Cells.new()
 
     socket
-    |> assign(:cols, @cols)
-    |> assign(:rows, @rows)
-    |> assign(:cells, cells)
+    |> assign(:cols, sheet.cols)
+    |> assign(:rows, sheet.rows)
+    |> assign(:cells, sheet.cells)
     |> assign(:edit_cell, nil)
     |> ok()
   end
