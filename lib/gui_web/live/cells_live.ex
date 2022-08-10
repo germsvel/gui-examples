@@ -1,6 +1,8 @@
 defmodule GuiWeb.CellsLive do
   use GuiWeb, :live_view
 
+  alias Gui.Cell
+
   def render(assigns) do
     ~H"""
     <h1 class="font-semibold">Cells</h1>
@@ -42,21 +44,6 @@ defmodule GuiWeb.CellsLive do
   @cols ~w(A B C D E F)
   # @rows for i <- 0..99, do: to_string(i)
   @rows for i <- 0..9, do: to_string(i)
-
-  defmodule Cell do
-    defstruct [:id, :col, :row, :value]
-
-    def build(col, row), do: %__MODULE__{id: col <> row, col: col, row: row}
-
-    defimpl String.Chars, for: Cell do
-      def to_string(%{value: value}) do
-        case value do
-          "=" <> rest -> "function #{rest}"
-          raw_value -> raw_value
-        end
-      end
-    end
-  end
 
   def mount(_, _, socket) do
     cells =

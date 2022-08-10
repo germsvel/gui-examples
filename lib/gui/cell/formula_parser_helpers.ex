@@ -1,4 +1,4 @@
-defmodule Gui.CellParserHelpers do
+defmodule Gui.Cell.FormulaParserHelpers do
   import NimbleParsec
 
   def identifier do

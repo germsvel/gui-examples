@@ -1,6 +1,6 @@
-defmodule Gui.CellParser do
+defmodule Gui.Cell.FormulaParser do
   import NimbleParsec
-  import Gui.CellParserHelpers
+  import Gui.Cell.FormulaParserHelpers
 
   defparsec(:expr, expr())
   defparsec(:coord, coord())
