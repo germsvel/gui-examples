@@ -15,7 +15,6 @@ defmodule Gui.Cell.FormulaParserHelpers do
       string("MULT") |> replace(:mult)
     ])
     |> lookahead_not(ascii_char([?a..?z, ?A..?Z, ?0..?9]))
-    |> unwrap_and_tag(:iden)
   end
 
   def integer do
@@ -61,12 +60,12 @@ defmodule Gui.Cell.FormulaParserHelpers do
     ])
   end
 
-  def application do
+  def function do
     identifier()
     |> ignore(string("("))
     |> concat(expr())
     |> ignore(string(")"))
-    |> tag(:application)
+    |> tag(:function)
   end
 
   def text do

@@ -21,19 +21,19 @@ defmodule Gui.Cell.FormulaParserTest do
   end
 
   test "parses identifiers" do
-    {:ok, [iden: :add], "", _, _, _} = FormulaParser.identifier("add")
-    {:ok, [iden: :sub], "", _, _, _} = FormulaParser.identifier("sub")
-    {:ok, [iden: :sum], "", _, _, _} = FormulaParser.identifier("sum")
-    {:ok, [iden: :div], "", _, _, _} = FormulaParser.identifier("div")
-    {:ok, [iden: :mult], "", _, _, _} = FormulaParser.identifier("mult")
+    {:ok, [:add], "", _, _, _} = FormulaParser.identifier("add")
+    {:ok, [:sub], "", _, _, _} = FormulaParser.identifier("sub")
+    {:ok, [:sum], "", _, _, _} = FormulaParser.identifier("sum")
+    {:ok, [:div], "", _, _, _} = FormulaParser.identifier("div")
+    {:ok, [:mult], "", _, _, _} = FormulaParser.identifier("mult")
   end
 
   test "parses function application" do
-    {:ok, [application: [iden: :sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
-      FormulaParser.application("sum(A1:B1)")
+    {:ok, [function: [:sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
+      FormulaParser.function("sum(A1:B1)")
 
-    {:ok, [application: [iden: :div, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
-      FormulaParser.application("div(A1:B1)")
+    {:ok, [function: [:div, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
+      FormulaParser.function("div(A1:B1)")
   end
 
   test "parses text" do
@@ -44,7 +44,7 @@ defmodule Gui.Cell.FormulaParserTest do
     {:ok, [text: "hello world"], "", _, _, _} = FormulaParser.formula("hello world")
     {:ok, [number: 23.9], "", _, _, _} = FormulaParser.formula("23.9")
 
-    {:ok, [application: [iden: :sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
+    {:ok, [function: [:sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
       FormulaParser.formula("=sum(A1:B1)")
   end
 end

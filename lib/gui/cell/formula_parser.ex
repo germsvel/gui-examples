@@ -7,11 +7,11 @@ defmodule Gui.Cell.FormulaParser do
   defparsec(:range, range())
   defparsec(:number, number())
   defparsec(:identifier, identifier())
-  defparsec(:application, application())
+  defparsec(:function, function())
   defparsec(:text, text())
 
   defparsec(
     :formula,
-    choice([number(), ignore(string("=")) |> concat(application()), text()])
+    choice([number(), ignore(string("=")) |> concat(function()), text()])
   )
 end
