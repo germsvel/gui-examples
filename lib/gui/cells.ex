@@ -17,12 +17,27 @@ defmodule Gui.Cells do
     %__MODULE__{cells: cells, cols: @cols, rows: @rows}
   end
 
+  def evaluate(_cells, nil), do: ""
   def evaluate(_cells, text: text), do: text
   def evaluate(_cells, number: number), do: number
 
   def evaluate(cells, coord: coord) do
     cell = find_by(cells, id: coord)
     evaluate(cells, cell.value)
+  end
+
+  def evaluate(cells, function: function) do
+    [operation, args] = function
+    arg_list = eval_args(args)
+
+    case operation do
+      :sum -> Enum.reduce(arg_list, 0, fn acc, i -> acc + i end)
+    end
+  end
+
+  def eval_args({:range, coords}) do
+    # eval argumnets
+    [2, 3]
   end
 
   defp find_by(cells, id: id) do

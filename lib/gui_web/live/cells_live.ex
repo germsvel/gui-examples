@@ -28,7 +28,7 @@ defmodule GuiWeb.CellsLive do
                   </.form>
                 </td>
               <% else %>
-                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"><%= to_string(cell) %></td>
+                <td id={cell.id} phx-click="edit-cell" phx-value-cell={cell.id} class="border border-slate-500"><%= evaluate(@cells, cell) %></td>
               <% end %>
             <% end %>
           </tr>
@@ -36,6 +36,10 @@ defmodule GuiWeb.CellsLive do
       </tbody>
     </table>
     """
+  end
+
+  defp evaluate(cells, cell) do
+    Cells.evaluate(cells, cell.value)
   end
 
   defp row_cells(cells, row), do: Enum.filter(cells, fn %{row: cell_row} -> cell_row == row end)

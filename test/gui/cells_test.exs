@@ -45,5 +45,20 @@ defmodule Gui.CellsTest do
 
       assert result == "Hello world"
     end
+
+    test "evaluates functions" do
+      sheet = Cells.new()
+      [cell1, cell2, cell3 | rest] = sheet.cells
+
+      cell1 = Cell.put_value(cell1, "23")
+      cell2 = Cell.put_value(cell2, "25")
+      cell3 = Cell.put_value(cell3, "=SUM(#{cell1.id}:#{cell2.id})")
+
+      cells = [cell1, cell2, cell3 | rest]
+
+      result = Cells.evaluate(cells, cell3.value)
+
+      assert result == 48
+    end
   end
 end

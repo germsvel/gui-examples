@@ -12,6 +12,11 @@ defmodule Gui.Cell.FormulaParser do
 
   defparsec(
     :formula,
-    choice([number(), ignore(string("=")) |> concat(function()), text()])
+    choice([
+      number(),
+      ignore(string("=")) |> concat(coord()),
+      ignore(string("=")) |> concat(function()),
+      text()
+    ])
   )
 end

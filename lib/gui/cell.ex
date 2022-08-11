@@ -13,15 +13,4 @@ defmodule Gui.Cell do
     {:ok, type, "", _, _, _} = Cell.FormulaParser.formula(value)
     type
   end
-
-  defimpl String.Chars, for: Gui.Cell do
-    def to_string(%{value: value}) do
-      case value do
-        [text: text] -> text
-        [number: number] -> "#{number}"
-        [function: func] -> "Function = #{inspect(func)}"
-        nil -> ""
-      end
-    end
-  end
 end
