@@ -38,6 +38,7 @@ defmodule Gui.Cell.FormulaParserHelpers do
   def number do
     choice([float(), integer()])
     |> unwrap_and_tag(:number)
+    |> post_traverse(:to_struct)
   end
 
   def coord do
@@ -87,5 +88,9 @@ defmodule Gui.Cell.FormulaParserHelpers do
 
   def to_struct(rest, [range: [from, to]], context, _line, _offset) do
     {rest, [%Range{from: from, to: to}], context}
+  end
+
+  def to_struct(rest, [number: value], context, _line, _offset) do
+    {rest, [%Number{value: value}], context}
   end
 end

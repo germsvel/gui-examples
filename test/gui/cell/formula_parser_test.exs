@@ -21,9 +21,9 @@ defmodule Gui.Cell.FormulaParserTest do
   end
 
   test "parses numbers" do
-    {:ok, [number: 29], "", _, _, _} = FormulaParser.number("29")
-    {:ok, [number: 23.9], "", _, _, _} = FormulaParser.number("23.9")
-    {:ok, [number: -0.333], "", _, _, _} = FormulaParser.number("-0.333")
+    {:ok, [%Number{value: 29}], "", _, _, _} = FormulaParser.number("29")
+    {:ok, [%Number{value: 23.9}], "", _, _, _} = FormulaParser.number("23.9")
+    {:ok, [%Number{value: -0.333}], "", _, _, _} = FormulaParser.number("-0.333")
   end
 
   test "parses identifiers" do
@@ -48,7 +48,7 @@ defmodule Gui.Cell.FormulaParserTest do
 
   test "parses formulas that can be numbers, text, or function applications" do
     {:ok, [text: "hello world"], "", _, _, _} = FormulaParser.formula("hello world")
-    {:ok, [number: 23.9], "", _, _, _} = FormulaParser.formula("23.9")
+    {:ok, [%Number{value: 23.9}], "", _, _, _} = FormulaParser.formula("23.9")
 
     {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
      _, _} = FormulaParser.formula("=sum(A1:B1)")

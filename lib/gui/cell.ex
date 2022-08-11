@@ -14,6 +14,10 @@ defmodule Gui.Cell do
     type
   end
 
+  defmodule Number do
+    defstruct [:value]
+  end
+
   defmodule Coord do
     defstruct [:value]
   end
