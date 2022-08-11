@@ -2,16 +2,22 @@ defmodule Gui.Cell.FormulaParserTest do
   use ExUnit.Case, async: true
 
   alias Gui.Cell.FormulaParser
+  alias Gui.Cell.{Coord, Function, Range, Number, Text}
 
   test "parses a coordinate" do
-    {:ok, [coord: "A0"], "", %{}, {1, 0}, 2} = FormulaParser.coord("A0")
-    {:ok, [coord: "Z99"], "", %{}, {1, 0}, 3} = FormulaParser.coord("Z99")
+    {:ok, [%Coord{value: "A0"}], "", %{}, {1, 0}, 2} = FormulaParser.coord("A0")
+    {:ok, [%Coord{value: "Z99"}], "", %{}, {1, 0}, 3} = FormulaParser.coord("Z99")
   end
 
   test "parses a range" do
-    {:ok, [range: [coord: "A0", coord: "A9"]], "", _, _, _} = FormulaParser.range("A0:A9")
-    {:ok, [range: [coord: "A0", coord: "Z0"]], "", _, _, _} = FormulaParser.range("A0:Z0")
-    {:ok, [range: [coord: "F10", coord: "Z99"]], "", _, _, _} = FormulaParser.range("F10:Z99")
+    {:ok, [%Range{from: %Coord{value: "A0"}, to: %Coord{value: "A9"}}], "", _, _, _} =
+      FormulaParser.range("A0:A9")
+
+    {:ok, [%Range{from: %Coord{value: "A0"}, to: %Coord{value: "Z0"}}], "", _, _, _} =
+      FormulaParser.range("A0:Z0")
+
+    {:ok, [%Range{from: %Coord{value: "F10"}, to: %Coord{value: "Z99"}}], "", _, _, _} =
+      FormulaParser.range("F10:Z99")
   end
 
   test "parses numbers" do
@@ -29,11 +35,11 @@ defmodule Gui.Cell.FormulaParserTest do
   end
 
   test "parses function application" do
-    {:ok, [function: [:sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
-      FormulaParser.function("sum(A1:B1)")
+    {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
+     _, _} = FormulaParser.function("sum(A1:B1)")
 
-    {:ok, [function: [:div, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
-      FormulaParser.function("div(A1:B1)")
+    {:ok, [function: [:div, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
+     _, _} = FormulaParser.function("div(A1:B1)")
   end
 
   test "parses text" do
@@ -44,7 +50,7 @@ defmodule Gui.Cell.FormulaParserTest do
     {:ok, [text: "hello world"], "", _, _, _} = FormulaParser.formula("hello world")
     {:ok, [number: 23.9], "", _, _, _} = FormulaParser.formula("23.9")
 
-    {:ok, [function: [:sum, range: [coord: "A1", coord: "B1"]]], "", _, _, _} =
-      FormulaParser.formula("=sum(A1:B1)")
+    {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
+     _, _} = FormulaParser.formula("=sum(A1:B1)")
   end
 end

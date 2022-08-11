@@ -1,6 +1,8 @@
 defmodule Gui.Cell.FormulaParserHelpers do
   import NimbleParsec
 
+  alias Gui.Cell.{Coord, Function, Range, Number, Text}
+
   def identifier do
     choice([
       string("add") |> replace(:add),
@@ -43,6 +45,7 @@ defmodule Gui.Cell.FormulaParserHelpers do
     |> integer(min: 1, max: 2)
     |> reduce({Enum, :join, [""]})
     |> unwrap_and_tag(:coord)
+    |> post_traverse(:to_struct)
   end
 
   def range do
@@ -50,6 +53,7 @@ defmodule Gui.Cell.FormulaParserHelpers do
     |> ignore(string(":"))
     |> concat(coord())
     |> tag(:range)
+    |> post_traverse(:to_struct)
   end
 
   def expr do
@@ -75,5 +79,13 @@ defmodule Gui.Cell.FormulaParserHelpers do
     )
     |> reduce({Enum, :join, [""]})
     |> unwrap_and_tag(:text)
+  end
+
+  def to_struct(rest, [coord: value], context, _line, _offset) do
+    {rest, [%Coord{value: value}], context}
+  end
+
+  def to_struct(rest, [range: [from, to]], context, _line, _offset) do
+    {rest, [%Range{from: from, to: to}], context}
   end
 end

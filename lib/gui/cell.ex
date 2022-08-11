@@ -13,4 +13,12 @@ defmodule Gui.Cell do
     {:ok, type, "", _, _, _} = Cell.FormulaParser.formula(value)
     type
   end
+
+  defmodule Coord do
+    defstruct [:value]
+  end
+
+  defmodule Range do
+    defstruct [:from, :to]
+  end
 end
