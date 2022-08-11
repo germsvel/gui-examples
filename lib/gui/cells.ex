@@ -28,16 +28,15 @@ defmodule Gui.Cells do
 
   def evaluate(cells, function: function) do
     [operation, args] = function
-    arg_list = eval_args(args)
+    arg_list = eval_args(cells, args)
 
     case operation do
       :sum -> Enum.reduce(arg_list, 0, fn acc, i -> acc + i end)
     end
   end
 
-  def eval_args({:range, coords}) do
-    # eval argumnets
-    [2, 3]
+  def eval_args(cells, {:range, coords}) do
+    Enum.map(coords, fn coord -> evaluate(cells, coord) end)
   end
 
   defp find_by(cells, id: id) do
