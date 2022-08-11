@@ -17,6 +17,15 @@ defmodule Gui.Cells do
     %__MODULE__{cells: cells, cols: @cols, rows: @rows}
   end
 
-  def evaluate(text: text), do: text
-  def evaluate(number: number), do: number
+  def evaluate(_cells, text: text), do: text
+  def evaluate(_cells, number: number), do: number
+
+  def evaluate(cells, coord: coord) do
+    cell = find_by(cells, id: coord)
+    evaluate(cells, cell.value)
+  end
+
+  defp find_by(cells, id: id) do
+    Enum.find(cells, fn cell -> cell.id == id end)
+  end
 end

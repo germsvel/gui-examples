@@ -22,15 +22,28 @@ defmodule Gui.CellsTest do
     test "evaluates the value when a string" do
       value = [text: "hello world"]
 
-      result = Cells.evaluate(value)
+      result = Cells.evaluate([], value)
 
       assert result == "hello world"
     end
 
     test "evaluates the value when an integer" do
-      assert 23 == Cells.evaluate(number: 23)
-      assert 23.1 == Cells.evaluate(number: 23.1)
-      assert -23.1 == Cells.evaluate(number: -23.1)
+      assert 23 == Cells.evaluate([], number: 23)
+      assert 23.1 == Cells.evaluate([], number: 23.1)
+      assert -23.1 == Cells.evaluate([], number: -23.1)
+    end
+
+    test "evaluates coordinate values based on cell values" do
+      sheet = Cells.new()
+      [cell | rest] = sheet.cells
+
+      cell = Cell.put_value(cell, "Hello world")
+
+      cells = [cell | rest]
+
+      result = Cells.evaluate(cells, coord: cell.id)
+
+      assert result == "Hello world"
     end
   end
 end
