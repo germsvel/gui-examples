@@ -43,11 +43,11 @@ defmodule Gui.Cell.FormulaParserTest do
   end
 
   test "parses text" do
-    {:ok, [text: "hello world"], "", _, _, _} = FormulaParser.text("hello world")
+    {:ok, [%Text{value: "hello world"}], "", _, _, _} = FormulaParser.text("hello world")
   end
 
   test "parses formulas that can be numbers, text, or function applications" do
-    {:ok, [text: "hello world"], "", _, _, _} = FormulaParser.formula("hello world")
+    {:ok, [%Text{value: "hello world"}], "", _, _, _} = FormulaParser.formula("hello world")
     {:ok, [%Number{value: 23.9}], "", _, _, _} = FormulaParser.formula("23.9")
 
     {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,

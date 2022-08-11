@@ -80,17 +80,22 @@ defmodule Gui.Cell.FormulaParserHelpers do
     )
     |> reduce({Enum, :join, [""]})
     |> unwrap_and_tag(:text)
+    |> post_traverse(:to_struct)
+  end
+
+  def to_struct(rest, [text: value], context, _line, _offset) do
+    {rest, [%Text{value: value}], context}
   end
 
   def to_struct(rest, [coord: value], context, _line, _offset) do
     {rest, [%Coord{value: value}], context}
   end
 
-  def to_struct(rest, [range: [from, to]], context, _line, _offset) do
-    {rest, [%Range{from: from, to: to}], context}
-  end
-
   def to_struct(rest, [number: value], context, _line, _offset) do
     {rest, [%Number{value: value}], context}
+  end
+
+  def to_struct(rest, [range: [from, to]], context, _line, _offset) do
+    {rest, [%Range{from: from, to: to}], context}
   end
 end

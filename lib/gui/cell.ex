@@ -18,6 +18,10 @@ defmodule Gui.Cell do
     defstruct [:value]
   end
 
+  defmodule Text do
+    defstruct [:value]
+  end
+
   defmodule Coord do
     defstruct [:value]
   end
