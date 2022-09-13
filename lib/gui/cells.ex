@@ -1,5 +1,6 @@
 defmodule Gui.Cells do
   alias Gui.Cell
+  alias Gui.Cell.{Text, Number, Range, Function}
 
   defstruct [:cells, :rows, :cols]
 
@@ -18,8 +19,8 @@ defmodule Gui.Cells do
   end
 
   def evaluate(_cells, nil), do: ""
-  def evaluate(_cells, text: text), do: text
-  def evaluate(_cells, number: number), do: number
+  def evaluate(_cells, [%Text{value: text}]), do: text
+  def evaluate(_cells, [%Number{value: number}]), do: number
 
   def evaluate(cells, coord: coord) do
     cell = find_by(cells, id: coord)

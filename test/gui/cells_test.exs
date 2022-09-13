@@ -2,6 +2,7 @@ defmodule Gui.CellsTest do
   use ExUnit.Case, async: true
 
   alias Gui.{Cells, Cell}
+  alias Gui.Cell.{Text, Number, Range, Function}
 
   describe "new/0" do
     test "creates new set of cells" do
@@ -20,7 +21,7 @@ defmodule Gui.CellsTest do
 
   describe "evaluate/1" do
     test "evaluates the value when a string" do
-      value = [text: "hello world"]
+      value = [%Text{value: "hello world"}]
 
       result = Cells.evaluate([], value)
 
@@ -28,9 +29,9 @@ defmodule Gui.CellsTest do
     end
 
     test "evaluates the value when an integer" do
-      assert 23 == Cells.evaluate([], number: 23)
-      assert 23.1 == Cells.evaluate([], number: 23.1)
-      assert -23.1 == Cells.evaluate([], number: -23.1)
+      assert 23 == Cells.evaluate([], [%Number{value: 23}])
+      assert 23.1 == Cells.evaluate([], [%Number{value: 23.1}])
+      assert -23.1 == Cells.evaluate([], [%Number{value: -23.1}])
     end
 
     test "evaluates coordinate values based on cell values" do
