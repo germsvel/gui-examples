@@ -71,6 +71,7 @@ defmodule Gui.Cell.FormulaParserHelpers do
     |> concat(expr())
     |> ignore(string(")"))
     |> tag(:function)
+    |> post_traverse(:to_struct)
   end
 
   def text do
@@ -97,5 +98,9 @@ defmodule Gui.Cell.FormulaParserHelpers do
 
   def to_struct(rest, [range: [from, to]], context, _line, _offset) do
     {rest, [%Range{from: from, to: to}], context}
+  end
+
+  def to_struct(rest, [function: [identifier, args]], context, _line, _offset) do
+    {rest, [%Function{type: identifier, args: args}], context}
   end
 end

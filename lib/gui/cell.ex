@@ -29,4 +29,8 @@ defmodule Gui.Cell do
   defmodule Range do
     defstruct [:from, :to]
   end
+
+  defmodule Function do
+    defstruct [:type, :args]
+  end
 end

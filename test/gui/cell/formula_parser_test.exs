@@ -35,11 +35,13 @@ defmodule Gui.Cell.FormulaParserTest do
   end
 
   test "parses function application" do
-    {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
-     _, _} = FormulaParser.function("sum(A1:B1)")
+    {:ok,
+     [%Function{type: :sum, args: %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}}],
+     "", _, _, _} = FormulaParser.function("sum(A1:B1)")
 
-    {:ok, [function: [:div, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
-     _, _} = FormulaParser.function("div(A1:B1)")
+    {:ok,
+     [%Function{type: :div, args: %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}}],
+     "", _, _, _} = FormulaParser.function("div(A1:B1)")
   end
 
   test "parses text" do
@@ -50,7 +52,8 @@ defmodule Gui.Cell.FormulaParserTest do
     {:ok, [%Text{value: "hello world"}], "", _, _, _} = FormulaParser.formula("hello world")
     {:ok, [%Number{value: 23.9}], "", _, _, _} = FormulaParser.formula("23.9")
 
-    {:ok, [function: [:sum, %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}]], "", _,
-     _, _} = FormulaParser.formula("=sum(A1:B1)")
+    {:ok,
+     [%Function{type: :sum, args: %Range{from: %Coord{value: "A1"}, to: %Coord{value: "B1"}}}],
+     "", _, _, _} = FormulaParser.formula("=sum(A1:B1)")
   end
 end
